@@ -5,7 +5,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { MoreHorizontal, PlusCircle, Loader2 } from "lucide-react"
-import { format } from "date-fns"
+import { format, isBefore } from "date-fns"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -111,6 +111,17 @@ export default function CustomersPage() {
     return customer.zone === zoneFilter;
   });
 
+  const getPackageStatus = (customer: Customer) => {
+    if (customer.status === 'Inactive') {
+        return { text: 'Terminated', variant: 'destructive' as const, className: 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400' };
+    }
+    if (customer.expiryDate && isBefore(new Date(customer.expiryDate), new Date())) {
+        return { text: 'Expired', variant: 'secondary' as const, className: 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400' };
+    }
+    return { text: 'Active', variant: 'default' as const, className: 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' };
+  };
+
+
   if (isLoading) {
     return (
         <div className="flex h-64 items-center justify-center">
@@ -153,58 +164,59 @@ export default function CustomersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Customer</TableHead>
-              <TableHead>Type</TableHead>
+              <TableHead>ID</TableHead>
+              <TableHead>Username</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Mobile</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Package</TableHead>
+              <TableHead>Renewed At</TableHead>
+              <TableHead>Expires At</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Service Info</TableHead>
-              <TableHead>Joined Date</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCustomers.map((customer) => (
-                <TableRow key={customer.id}>
-                <TableCell>
-                  <Link href={`/customers/${customer.id}`} className="font-medium hover:underline">{customer.name}</Link>
-                  <div className="text-sm text-muted-foreground">{customer.email}</div>
-                </TableCell>
-                <TableCell>{customer.customerType}</TableCell>
-                <TableCell>
-                  <Badge variant={customer.status === 'Active' ? 'default' : customer.status === 'Suspended' ? 'destructive' : 'secondary'}
-                   className={`${customer.status === 'Active' ? 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' : ''}
-                   ${customer.status === 'Suspended' ? 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400' : ''}
-                   ${customer.status === 'Inactive' ? 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400' : ''}`}>
-                    {customer.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="font-medium">{customer.servicePackage}</div>
-                  <div className="text-sm text-muted-foreground">{customer.zone || 'No Zone'}</div>
-                  {customer.dataTopUp && customer.dataTopUp > 0 ? (
-                    <div className="text-sm text-accent">Top-up: {customer.dataTopUp} GB</div>
-                  ): null}
-                </TableCell>
-                <TableCell>{format(new Date(customer.joined), 'yyyy-MM-dd')}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Toggle menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => router.push(`/customers/edit/${customer.id}`)}>Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCustomerToTopUp(customer)}>Top-up Data</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(customer)}>Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredCustomers.map((customer) => {
+                const packageStatus = getPackageStatus(customer);
+                return (
+                    <TableRow key={customer.id}>
+                    <TableCell className="font-mono text-xs">{customer.id}</TableCell>
+                    <TableCell>{customer.pppoeUsername || 'N/A'}</TableCell>
+                    <TableCell>
+                      <Link href={`/customers/${customer.id}`} className="font-medium hover:underline">{customer.name}</Link>
+                    </TableCell>
+                    <TableCell>{customer.mobile}</TableCell>
+                    <TableCell>{customer.email}</TableCell>
+                    <TableCell>{customer.servicePackage}</TableCell>
+                    <TableCell>{customer.lastRechargeDate ? format(new Date(customer.lastRechargeDate), "PP") : 'N/A'}</TableCell>
+                    <TableCell>{customer.expiryDate ? format(new Date(customer.expiryDate), "PP") : 'N/A'}</TableCell>
+                    <TableCell>
+                        <Badge variant={packageStatus.variant} className={packageStatus.className}>
+                            {packageStatus.text}
+                        </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => router.push(`/customers/edit/${customer.id}`)}>Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setCustomerToTopUp(customer)}>Top-up Data</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(customer)}>Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                )
+            })}
           </TableBody>
         </Table>
       </CardContent>

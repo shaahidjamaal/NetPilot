@@ -20,12 +20,14 @@ const nextConfig: NextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      if (!config.resolve.fallback) {
-        config.resolve.fallback = {};
-      }
-      config.resolve.fallback['source-map-support'] = false;
-      config.resolve.fallback['net'] = false;
-      config.resolve.fallback['tls'] = false;
+      // These modules are used by `node-routeros` and are not available in the browser.
+      // We provide empty fallbacks for them to prevent build errors.
+      config.resolve.fallback = {
+        ...(config.resolve.fallback || {}),
+        'source-map-support': false,
+        net: false,
+        tls: false,
+      };
     }
     return config;
   },

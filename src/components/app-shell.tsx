@@ -103,9 +103,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-            <SidebarMenuItem>
-                <div className="h-4" />
-            </SidebarMenuItem>
             {systemNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton

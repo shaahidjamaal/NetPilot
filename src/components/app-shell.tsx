@@ -34,6 +34,7 @@ import {
   Package,
   Shield,
   BarChart,
+  Upload,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "./theme-toggle";
@@ -47,6 +48,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 
 
 const navItems = [
@@ -75,7 +77,37 @@ const bottomNavItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, avatar, updateAvatar } = useAuth();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Please upload an image smaller than 2MB.",
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateAvatar(reader.result as string);
+        toast({
+          title: "Avatar Updated",
+          description: "Your new profile picture has been saved.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
 
   return (
     <SidebarProvider>
@@ -163,7 +195,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar>
                   <AvatarImage
-                    src="https://placehold.co/40x40"
+                    src={avatar || "https://placehold.co/40x40"}
                     alt="@user"
                     data-ai-hint="avatar"
                   />
@@ -183,6 +215,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={triggerFileUpload}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  <span>Upload Avatar</span>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                    accept="image/png, image/jpeg, image/gif"
+                  />
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => logout()}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>

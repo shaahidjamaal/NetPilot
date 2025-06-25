@@ -37,7 +37,6 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "./theme-toggle";
-import { useAuth } from "@/hooks/use-auth";
 
 const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -63,7 +62,6 @@ const bottomNavItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { logout, user } = useAuth();
 
   return (
     <SidebarProvider>
@@ -121,12 +119,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip={{ children: "Log Out" }} onClick={logout}>
-                <LogOut />
-                <span>Log Out</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
@@ -138,7 +130,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           <Avatar>
             <AvatarImage src="https://placehold.co/40x40" alt="@user" data-ai-hint="avatar" />
-            <AvatarFallback>{user?.email.substring(0, 2).toUpperCase() || 'NP'}</AvatarFallback>
+            <AvatarFallback>NP</AvatarFallback>
           </Avatar>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-8">

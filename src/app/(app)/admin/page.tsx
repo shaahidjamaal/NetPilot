@@ -32,7 +32,6 @@ const userSchema = z.object({
   userType: z.enum(["Admin Staff", "Office Staff"], { required_error: "Please select a user type." }),
   designation: z.string().min(2, "Designation must be at least 2 characters."),
   roleId: z.string({ required_error: "Please select a role." }),
-  password: z.string().min(4, "Password must be at least 4 characters.").optional().or(z.literal('')),
   enabled: z.boolean().default(true),
 })
 
@@ -47,12 +46,11 @@ function UserForm({ user, onFormSubmit, closeDialog }: { user?: User, onFormSubm
   const { roles, isLoading: isLoadingRoles } = useRoles()
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
-    defaultValues: user ? { ...user, password: "" } : {
+    defaultValues: user ? user : {
       email: "",
       userType: "Office Staff",
       designation: "",
       roleId: undefined,
-      password: "",
       enabled: true,
     },
   })
@@ -121,18 +119,6 @@ function UserForm({ user, onFormSubmit, closeDialog }: { user?: User, onFormSubm
         />
          <FormField
             control={form.control}
-            name="password"
-            render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
-                    <FormDescription>{user ? 'Leave blank to keep current password.' : 'Set an initial password for the new user.'}</FormDescription>
-                    <FormMessage />
-                </FormItem>
-            )}
-        />
-         <FormField
-            control={form.control}
             name="enabled"
             render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-md border p-4">
@@ -166,22 +152,9 @@ function UserManagementTab() {
 
   const handleFormSubmit = (values: z.infer<typeof userSchema>) => {
     if (editingUser) {
-        const { password, ...userData } = values;
-        const dataToUpdate: Partial<Omit<User, 'id'>> = userData;
-        if (password && password.length > 0) {
-            dataToUpdate.password = password;
-        }
-        updateUser(editingUser.id, dataToUpdate);
+        updateUser(editingUser.id, values);
         toast({ title: "User Updated", description: `${values.email} has been updated.` })
     } else {
-        if (!values.password || values.password.length < 4) {
-             toast({
-                variant: "destructive",
-                title: "Password Required",
-                description: "A password of at least 4 characters must be set for new users.",
-            });
-            return;
-        }
         addUser(values as Omit<User, 'id'>)
         toast({ title: "User Created", description: `${values.email} has been created.` })
     }

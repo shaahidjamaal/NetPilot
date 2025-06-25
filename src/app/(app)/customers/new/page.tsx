@@ -103,11 +103,11 @@ export default function AddCustomerPage() {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-4">
-            <Link href="/customers" passHref>
-                 <Button variant="outline" size="icon" asChild>
-                    <a><ArrowLeft className="h-4 w-4" /></a>
-                 </Button>
-            </Link>
+            <Button variant="outline" size="icon" asChild>
+                <Link href="/customers">
+                    <ArrowLeft className="h-4 w-4" />
+                </Link>
+            </Button>
             <div>
               <CardTitle>Add New Customer</CardTitle>
               <CardDescription>Fill out the form below to add a new customer.</CardDescription>

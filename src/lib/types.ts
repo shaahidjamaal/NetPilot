@@ -1,5 +1,6 @@
 
 
+
 export const allPermissions = [
   "manage_users",
   "manage_roles",
@@ -110,4 +111,15 @@ export type Invoice = {
   packagePrice: number;
   discount: number;
   additionalCharges: number;
+};
+
+export const inventoryCategories = ["Routers", "Switches", "Cabling", "Accessories"] as const;
+export type InventoryCategory = (typeof inventoryCategories)[number];
+
+export type InventoryItem = {
+  id: string;
+  name: string;
+  category: InventoryCategory;
+  stock: number;
+  status: "In Stock" | "Low Stock" | "Out of Stock";
 };

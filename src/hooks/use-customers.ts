@@ -59,6 +59,20 @@ export function useCustomers() {
     const newCustomers = [...customers, newCustomer];
     updateLocalStorage(newCustomers);
   }, [customers, updateLocalStorage]);
+
+  const addMultipleCustomers = useCallback((customersData: AddCustomerInput[]) => {
+    const newCustomersList: Customer[] = customersData.map(customerData => ({
+        ...customerData,
+        status: 'Active',
+        joined: new Date().toISOString(),
+        dataTopUp: 0,
+        lastRechargeDate: new Date().toISOString(),
+        expiryDate: addDays(new Date(), 30).toISOString()
+    }));
+    
+    const newCustomers = [...customers, ...newCustomersList];
+    updateLocalStorage(newCustomers);
+  }, [customers, updateLocalStorage]);
   
   const getCustomerById = useCallback((id: string) => {
     return customers.find(c => c.id === id);
@@ -93,5 +107,5 @@ export function useCustomers() {
   }, [customers, updateLocalStorage]);
 
 
-  return { customers, addCustomer, getCustomerById, updateCustomer, deleteCustomer, topUpCustomer, terminateCustomer, isLoading };
+  return { customers, addCustomer, addMultipleCustomers, getCustomerById, updateCustomer, deleteCustomer, topUpCustomer, terminateCustomer, isLoading };
 }

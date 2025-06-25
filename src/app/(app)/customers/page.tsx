@@ -1,11 +1,12 @@
 
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MoreHorizontal, PlusCircle, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Search } from "lucide-react"
+import { MoreHorizontal, PlusCircle, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Search, Download, FileUp, ChevronDown } from "lucide-react"
 import { format, isBefore } from "date-fns"
+import * as XLSX from 'xlsx';
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -48,12 +49,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { useCustomers } from "@/hooks/use-customers"
+import { useCustomers, type AddCustomerInput } from "@/hooks/use-customers"
 import { useZones } from "@/hooks/use-zones"
 import { type Customer } from "@/lib/types"
 
@@ -61,7 +63,7 @@ type SortableColumn = keyof Pick<Customer, 'id' | 'pppoeUsername' | 'name' | 'se
 
 export default function CustomersPage() {
   const router = useRouter()
-  const { customers, deleteCustomer, topUpCustomer, isLoading } = useCustomers()
+  const { customers, deleteCustomer, topUpCustomer, addMultipleCustomers, isLoading } = useCustomers()
   const { zones, isLoading: isLoadingZones } = useZones()
   const { toast } = useToast()
   
@@ -72,6 +74,10 @@ export default function CustomersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [zoneFilter, setZoneFilter] = useState<string>('all');
   const [sortConfig, setSortConfig] = useState<{ key: SortableColumn; direction: 'ascending' | 'descending' } | null>({ key: 'id', direction: 'ascending' });
+
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
 
 
   const handleDeleteClick = (customer: Customer) => {
@@ -185,6 +191,81 @@ export default function CustomersPage() {
     return { text: 'Active', variant: 'default' as const, className: 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' };
   };
 
+  const handleExport = useCallback((format: 'csv' | 'xlsx') => {
+    if (sortedCustomers.length === 0) {
+      toast({ variant: 'destructive', title: 'No Data', description: 'There is no data to export.' });
+      return;
+    }
+    
+    const dataToExport = sortedCustomers.map(c => ({
+      'ID': c.id,
+      'Username': c.pppoeUsername || '',
+      'Name': c.name,
+      'Mobile': c.mobile,
+      'Email': c.email,
+      'Package': c.servicePackage,
+      'Renewed At': c.lastRechargeDate ? format(new Date(c.lastRechargeDate), 'yyyy-MM-dd') : '',
+      'Expires At': c.expiryDate ? format(new Date(c.expiryDate), 'yyyy-MM-dd') : '',
+      'Status': getPackageStatus(c).text,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Customers');
+    XLSX.writeFile(workbook, `customers.${format}`);
+    
+    toast({ title: 'Export Complete', description: `Customer list has been exported as a ${format.toUpperCase()} file.` });
+  }, [sortedCustomers, toast]);
+
+
+  const handleImport = async () => {
+    if (!importFile) {
+        toast({ variant: 'destructive', title: 'No File', description: 'Please select a file to import.' });
+        return;
+    }
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = e.target?.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+            const newCustomers: AddCustomerInput[] = json.map(row => ({
+                id: String(row.ID || ''),
+                name: String(row.Name || ''),
+                mobile: String(row.Mobile || ''),
+                email: String(row.Email || ''),
+                pppoeUsername: String(row.Username || ''),
+                pppoePassword: String(row.Password || 'password'), // Default password for import
+                customerType: String(row['Customer Type'] || 'Home User') as any,
+                servicePackage: String(row.Package || ''),
+                permanentAddress: String(row['Address'] || 'N/A'),
+                installationAddress: String(row['Address'] || 'N/A'),
+                aadharNumber: String(row['Aadhar Number'] || ''),
+            })).filter(c => c.id && c.name && c.email && c.mobile);
+
+            if (newCustomers.length > 0) {
+              addMultipleCustomers(newCustomers);
+              toast({ title: 'Import Successful', description: `${newCustomers.length} customers have been imported.` });
+              setIsImportOpen(false);
+              setImportFile(null);
+            } else {
+              toast({ variant: 'destructive', title: 'Import Failed', description: 'No valid customer data found in the file. Check column headers.' });
+            }
+
+        } catch (error) {
+            console.error('Import error:', error);
+            toast({ variant: 'destructive', title: 'Import Error', description: 'Failed to parse the file. Please ensure it is a valid CSV or Excel file.' });
+        } finally {
+            setIsImporting(false);
+        }
+    };
+    reader.readAsBinaryString(importFile);
+  };
 
   if (isLoading) {
     return (
@@ -203,19 +284,31 @@ export default function CustomersPage() {
               <CardTitle>Customers</CardTitle>
               <CardDescription>Manage your customers and view their details.</CardDescription>
           </div>
-          <Link href="/customers/new" passHref>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Customer
-              </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setIsImportOpen(true)}><FileUp className="mr-2 h-4 w-4"/> Import</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline"><Download className="mr-2 h-4 w-4"/> Export <ChevronDown className="ml-2 h-4 w-4"/></Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Export as CSV</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('xlsx')}>Export as Excel (.xlsx)</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Link href="/customers/new" passHref>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Customer
+                </Button>
+            </Link>
+          </div>
         </div>
         <div className="mt-4 flex flex-col sm:flex-row items-center gap-2">
-            <div className="relative w-full flex-1">
+            <div className="relative w-full sm:max-w-xs">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                     type="search"
-                    placeholder="Search by name, ID, username, email or mobile..."
+                    placeholder="Search customers..."
                     className="w-full rounded-lg bg-background pl-8"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -364,8 +457,33 @@ export default function CustomersPage() {
             </DialogFooter>
         </DialogContent>
     </Dialog>
+    <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Import Customers</DialogTitle>
+          <DialogDescription>
+            Upload a CSV or Excel file to add new customers in bulk.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+            <div className="space-y-1 text-sm text-muted-foreground">
+              <p>Your file should have the following columns: `ID`, `Name`, `Mobile`, `Email`, `Username`, `Password`, `Customer Type`, `Package`, `Address`, `Aadhar Number`.</p>
+            </div>
+            <Input
+              type="file"
+              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+              onChange={(e) => setImportFile(e.target.files ? e.target.files[0] : null)}
+            />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsImportOpen(false)}>Cancel</Button>
+          <Button onClick={handleImport} disabled={!importFile || isImporting}>
+            {isImporting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Import Customers
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   )
 }
-
-    

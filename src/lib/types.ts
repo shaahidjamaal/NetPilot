@@ -45,3 +45,13 @@ export type Zone = {
   id: string;
   name: string;
 };
+
+export type User = {
+  id: string;
+  email: string;
+  userType: 'Admin Staff' | 'Office Staff';
+  designation: string;
+  canViewInvoice: boolean;
+  canReceivePayment: boolean;
+  enabled: boolean;
+};

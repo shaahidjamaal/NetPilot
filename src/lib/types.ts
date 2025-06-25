@@ -175,3 +175,23 @@ export type Ticket = {
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 };
+
+export const leadStatuses = ["New", "Contacted", "Qualified", "Lost", "Converted"] as const;
+export type LeadStatus = (typeof leadStatuses)[number];
+
+export const leadSources = ["Walk-in", "Phone Call", "Website", "Referral", "Other"] as const;
+export type LeadSource = (typeof leadSources)[number];
+
+export type Lead = {
+  id: string;
+  name: string;
+  email: string;
+  mobile: string;
+  address: string;
+  status: LeadStatus;
+  source: LeadSource;
+  notes?: string;
+  assigneeId?: string; // Optional user ID
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+};

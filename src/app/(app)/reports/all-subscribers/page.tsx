@@ -1,19 +1,26 @@
 
 "use client"
 
+import * as XLSX from 'xlsx';
 import { useCustomers } from "@/hooks/use-customers"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { ArrowLeft, Download, Loader2 } from "lucide-react"
+import { ArrowLeft, Download, Loader2, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { format } from 'date-fns'
 
 export default function AllSubscribersReportPage() {
   const { customers, isLoading } = useCustomers()
 
-  const handleExport = () => {
+  const handleExportCsv = () => {
     if (!customers || customers.length === 0) return;
 
     // Define headers to match the Customer type
@@ -64,6 +71,30 @@ export default function AllSubscribersReportPage() {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportXlsx = () => {
+    if (!customers || customers.length === 0) return;
+
+    const dataToExport = customers.map(customer => ({
+      'ID': customer.id,
+      'Name': customer.name,
+      'Email': customer.email,
+      'Mobile': customer.mobile,
+      'Service Package': customer.servicePackage,
+      'Status': customer.status,
+      'Joined Date': format(new Date(customer.joined), 'yyyy-MM-dd'),
+      'Permanent Address': customer.permanentAddress,
+      'Installation Address': customer.installationAddress,
+      'Aadhar Number': customer.aadharNumber,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Subscribers");
+    
+    const today = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `all-subscribers-report-${today}.xlsx`);
+  };
+
   return (
     <div>
       <Card>
@@ -80,10 +111,19 @@ export default function AllSubscribersReportPage() {
                 <CardDescription>A complete list of all subscribers in the system.</CardDescription>
               </div>
             </div>
-            <Button onClick={handleExport} disabled={isLoading || customers.length === 0}>
-              <Download className="mr-2 h-4 w-4" />
-              Export to CSV
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button disabled={isLoading || customers.length === 0}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={handleExportCsv}>Export as CSV</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportXlsx}>Export as Excel (.xlsx)</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
         <CardContent>

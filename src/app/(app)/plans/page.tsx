@@ -4,10 +4,10 @@ import { Separator } from "@/components/ui/separator"
 import { Download, Upload, Gauge, Users } from "lucide-react"
 
 const plans = [
-  { name: "Basic DSL", price: 29.99, download: 25, upload: 5, data: "Unlimited", users: "1-2" },
-  { name: "Fiber 100", price: 49.99, download: 100, upload: 20, data: "Unlimited", users: "3-5" },
-  { name: "Fiber 500", price: 69.99, download: 500, upload: 100, data: "Unlimited", users: "5-10" },
-  { name: "Fiber 1000", price: 89.99, download: 1000, upload: 250, data: "Unlimited", users: "10+" },
+  { name: "Basic DSL", price: 2499, download: 25, upload: 5, data: "Unlimited", users: "1-2" },
+  { name: "Fiber 100", price: 3999, download: 100, upload: 20, data: "Unlimited", users: "3-5" },
+  { name: "Fiber 500", price: 5799, download: 500, upload: 100, data: "Unlimited", users: "5-10" },
+  { name: "Fiber 1000", price: 7499, download: 1000, upload: 250, data: "Unlimited", users: "10+" },
 ]
 
 export default function PlansPage() {
@@ -26,7 +26,7 @@ export default function PlansPage() {
             <CardHeader>
               <CardTitle>{plan.name}</CardTitle>
               <CardDescription>
-                <span className="text-3xl font-bold text-primary">${plan.price}</span>
+                <span className="text-3xl font-bold text-primary">₹{plan.price.toLocaleString('en-IN')}</span>
                 /month
               </CardDescription>
             </CardHeader>

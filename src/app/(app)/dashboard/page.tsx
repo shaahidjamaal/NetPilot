@@ -1,17 +1,17 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, LineChart, Users, ArrowUp, DollarSign, Signal } from "lucide-react"
+import { Users, ArrowUp, IndianRupee, Signal } from "lucide-react"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Bar, BarChart as RechartsBarChart, CartesianGrid, Line, LineChart as RechartsLineChart, XAxis, YAxis, ResponsiveContainer } from "recharts"
 
 const revenueData = [
-  { month: "Jan", revenue: 18600 },
-  { month: "Feb", revenue: 20500 },
-  { month: "Mar", revenue: 23700 },
-  { month: "Apr", revenue: 19800 },
-  { month: "May", revenue: 25400 },
-  { month: "Jun", revenue: 29000 },
+  { month: "Jan", revenue: 1500000 },
+  { month: "Feb", revenue: 1650000 },
+  { month: "Mar", revenue: 1800000 },
+  { month: "Apr", revenue: 1700000 },
+  { month: "May", revenue: 2000000 },
+  { month: "Jun", revenue: 2400000 },
 ]
 
 const usageData = [
@@ -32,11 +32,11 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <IndianRupee className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$29,000.00</div>
-            <p className="text-xs text-muted-foreground">+12.5% from last month</p>
+            <div className="text-2xl font-bold">₹{revenueData[5].revenue.toLocaleString('en-IN')}</div>
+            <p className="text-xs text-muted-foreground">+20.0% from last month</p>
           </CardContent>
         </Card>
         <Card>
@@ -80,7 +80,7 @@ export default function DashboardPage() {
               <RechartsBarChart data={revenueData}>
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
-                <YAxis tickLine={false} tickMargin={10} axisLine={false} tickFormatter={(value) => `$${Number(value) / 1000}k`} />
+                <YAxis tickLine={false} tickMargin={10} axisLine={false} tickFormatter={(value) => `₹${Number(value) / 100000}L`} />
                 <ChartTooltip
                   cursor={false}
                   content={<ChartTooltipContent indicator="dot" />}

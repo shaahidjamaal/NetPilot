@@ -26,12 +26,12 @@ import {
 } from "@/components/ui/table"
 
 const invoices = [
-  { id: "INV-2024001", customer: "John Doe", amount: 49.99, dueDate: "2024-07-15", status: "Paid" },
-  { id: "INV-2024002", customer: "Jane Smith", amount: 29.99, dueDate: "2024-07-20", status: "Unpaid" },
-  { id: "INV-2024003", customer: "Mike Johnson", amount: 69.99, dueDate: "2024-06-25", status: "Overdue" },
-  { id: "INV-2024004", customer: "Emily Davis", amount: 89.99, dueDate: "2024-07-10", status: "Paid" },
-  { id: "INV-2024005", customer: "Chris Wilson", amount: 29.99, dueDate: "2024-07-01", status: "Paid" },
-  { id: "INV-2024006", customer: "Sarah Brown", amount: 49.99, dueDate: "2024-07-22", status: "Unpaid" },
+  { id: "INV-2024001", customer: "John Doe", amount: 3999, dueDate: "2024-07-15", status: "Paid" },
+  { id: "INV-2024002", customer: "Jane Smith", amount: 2499, dueDate: "2024-07-20", status: "Unpaid" },
+  { id: "INV-2024003", customer: "Mike Johnson", amount: 5799, dueDate: "2024-06-25", status: "Overdue" },
+  { id: "INV-2024004", customer: "Emily Davis", amount: 7499, dueDate: "2024-07-10", status: "Paid" },
+  { id: "INV-2024005", customer: "Chris Wilson", amount: 2499, dueDate: "2024-07-01", status: "Paid" },
+  { id: "INV-2024006", customer: "Sarah Brown", amount: 3999, dueDate: "2024-07-22", status: "Unpaid" },
 ]
 
 export default function BillingPage() {
@@ -67,7 +67,7 @@ export default function BillingPage() {
               <TableRow key={invoice.id}>
                 <TableCell className="font-medium">{invoice.id}</TableCell>
                 <TableCell>{invoice.customer}</TableCell>
-                <TableCell>${invoice.amount.toFixed(2)}</TableCell>
+                <TableCell>₹{invoice.amount.toLocaleString('en-IN')}</TableCell>
                 <TableCell>{invoice.dueDate}</TableCell>
                 <TableCell>
                   <Badge variant={invoice.status === 'Paid' ? 'default' : invoice.status === 'Overdue' ? 'destructive' : 'secondary'}

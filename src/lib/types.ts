@@ -85,6 +85,7 @@ export type Zone = {
 export type User = {
   id: string;
   email: string;
+  password?: string;
   userType: 'Admin Staff' | 'Office Staff';
   designation: string;
   roleId: string;

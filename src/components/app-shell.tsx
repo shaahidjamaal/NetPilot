@@ -38,7 +38,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/settings", icon: Settings, label: "Settings" },
     { href: "/customers", icon: Users, label: "Subscribers" },
     { href: "/online-subscribers", icon: Wifi, label: "Online Subscribers" },
     { href: "/access-request-log", icon: FileClock, label: "Access Request Log" },
@@ -47,14 +46,15 @@ const navItems = [
     { href: "/tickets", icon: Ticket, label: "Tickets" },
     { href: "/leads", icon: UserPlus, label: "Leads" },
     { href: "/package-sales", icon: ShoppingCart, label: "Package Sales" },
-    { href: "/billing", icon: FileText, label: "Invoice" },
+    { href: "/billing", icon: FileText, label: "Invoices" },
     { href: "/payment", icon: CreditCard, label: "Payment" },
     { href: "/inventory", icon: Boxes, label: "Inventory" },
     { href: "/zones", icon: MapPin, label: "Zones" },
-    { href: "/plans", icon: Package, label: "Package" },
+    { href: "/plans", icon: Package, label: "Packages" },
 ];
 
 const bottomNavItems = [
+    { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

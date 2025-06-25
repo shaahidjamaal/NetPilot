@@ -5,39 +5,19 @@ import { type Invoice, type Customer, type Package } from '@/lib/types';
 import { useState, useEffect, useCallback } from 'react';
 import { useCustomers } from './use-customers';
 import { usePackages } from './use-packages';
-import { addDays, format, startOfMonth } from 'date-fns';
+import { addDays, format } from 'date-fns';
 
 const STORAGE_KEY = 'netpilot-invoices';
 
-const createInitialInvoices = (customers: Customer[], packages: Package[]): Invoice[] => {
-    const today = new Date();
-    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    const initialInvoices: Invoice[] = [];
+const initialInvoices: Invoice[] = [];
 
-    customers.slice(0, 5).forEach(customer => {
-        if (customer.status !== 'Active') return;
-        const customerPackage = packages.find(p => p.name === customer.servicePackage);
-        if (!customerPackage) return;
-        
-        let amount = customerPackage.price;
-        if (customer.discount && customer.discount > 0) {
-            amount = amount - (amount * (customer.discount / 100));
-        }
-
-        const generatedDate = startOfMonth(lastMonth);
-
-        initialInvoices.push({
-            id: `INV-${format(generatedDate, 'yyyyMM')}-${customer.id.slice(-4)}`,
-            customerId: customer.id,
-            customerName: customer.name,
-            amount: Math.round(amount),
-            generatedDate: generatedDate.toISOString(),
-            dueDate: addDays(generatedDate, 15).toISOString(),
-            status: Math.random() > 0.5 ? 'Paid' : 'Unpaid',
-        });
-    });
-    return initialInvoices;
+export type AddInvoiceInput = {
+    customerId: string;
+    packageName: string;
+    additionalCharges?: number;
+    discountOverride?: number;
 };
+
 
 export function useInvoices() {
     const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -53,17 +33,15 @@ export function useInvoices() {
             if (item) {
                 setInvoices(JSON.parse(item));
             } else {
-                const initialData = createInitialInvoices(customers, packages);
-                window.localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
-                setInvoices(initialData);
+                window.localStorage.setItem(STORAGE_KEY, JSON.stringify(initialInvoices));
+                setInvoices(initialInvoices);
             }
         } catch (error) {
             console.error(error);
-            const initialData = createInitialInvoices(customers, packages);
-            setInvoices(initialData);
+            setInvoices(initialInvoices);
         }
         setIsLoading(false);
-    }, [isLoadingCustomers, isLoadingPackages, customers, packages]);
+    }, [isLoadingCustomers, isLoadingPackages]);
 
     const updateLocalStorage = useCallback((newInvoices: Invoice[]) => {
         try {
@@ -74,47 +52,34 @@ export function useInvoices() {
         }
     }, []);
     
-    const generateInvoices = useCallback(() => {
-        const existingInvoices = [...invoices];
-        const newGenerated: Invoice[] = [];
-        const today = new Date();
-        const currentMonthYear = format(today, 'yyyy-MM');
+    const addInvoice = useCallback((data: AddInvoiceInput) => {
+        const customer = customers.find(c => c.id === data.customerId);
+        const servicePackage = packages.find(p => p.name === data.packageName);
 
-        customers.forEach(customer => {
-            if (customer.status !== 'Active') return; 
-
-            const customerPackage = packages.find(p => p.name === customer.servicePackage);
-            if (!customerPackage) return; 
-
-            const existingInvoice = existingInvoices.find(inv => 
-                inv.customerId === customer.id && 
-                format(new Date(inv.generatedDate), 'yyyy-MM') === currentMonthYear
-            );
-            if (existingInvoice) return;
-
-            let amount = customerPackage.price;
-            if (customer.discount && customer.discount > 0) {
-                amount = amount - (amount * (customer.discount / 100));
-            }
-            
-            const generationDate = startOfMonth(today);
-
-            const newInvoice: Invoice = {
-                id: `INV-${format(generationDate, 'yyyyMM')}-${customer.id.slice(-4)}`,
-                customerId: customer.id,
-                customerName: customer.name,
-                amount: Math.round(amount),
-                generatedDate: generationDate.toISOString(),
-                dueDate: addDays(generationDate, 15).toISOString(),
-                status: 'Unpaid'
-            };
-            newGenerated.push(newInvoice);
-        });
-
-        if (newGenerated.length > 0) {
-            updateLocalStorage([...existingInvoices, ...newGenerated].sort((a, b) => new Date(b.generatedDate).getTime() - new Date(a.generatedDate).getTime()));
+        if (!customer || !servicePackage) {
+            throw new Error("Selected customer or package not found.");
         }
-        return newGenerated.length;
+
+        const discount = data.discountOverride !== undefined ? data.discountOverride : (customer.discount || 0);
+        const basePrice = servicePackage.price;
+        const discountAmount = basePrice * (discount / 100);
+        const finalAmount = (basePrice - discountAmount) + (data.additionalCharges || 0);
+
+        const today = new Date();
+        const newInvoice: Invoice = {
+            id: `INV-${format(today, 'yyyyMMdd')}-${customer.id.slice(-4)}`,
+            customerId: customer.id,
+            customerName: customer.name,
+            amount: Math.round(finalAmount),
+            generatedDate: today.toISOString(),
+            dueDate: addDays(today, 15).toISOString(),
+            status: 'Unpaid'
+        };
+
+        const newInvoices = [newInvoice, ...invoices].sort((a, b) => new Date(b.generatedDate).getTime() - new Date(a.generatedDate).getTime());
+        updateLocalStorage(newInvoices);
+        return newInvoice;
+
     }, [customers, packages, invoices, updateLocalStorage]);
     
     const markAsPaid = useCallback((invoiceId: string) => {
@@ -124,5 +89,12 @@ export function useInvoices() {
         updateLocalStorage(newInvoices);
     }, [invoices, updateLocalStorage]);
 
-    return { invoices, generateInvoices, markAsPaid, isLoading };
+    const deleteInvoice = useCallback((invoiceId: string) => {
+        const newInvoices = invoices.filter(inv => inv.id !== invoiceId);
+        updateLocalStorage(newInvoices);
+    }, [invoices, updateLocalStorage]);
+
+    const hookIsLoading = isLoading || isLoadingCustomers || isLoadingPackages;
+
+    return { invoices, addInvoice, markAsPaid, deleteInvoice, isLoading: hookIsLoading, customers, packages };
 }

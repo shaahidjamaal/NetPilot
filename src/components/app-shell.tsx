@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -21,18 +20,38 @@ import {
   Users,
   FileText,
   CreditCard,
-  BrainCircuit,
   LogOut,
   Network,
+  Settings,
+  Wifi,
+  FileClock,
+  BarChart2,
+  FileCode,
+  Ticket,
+  UserPlus,
+  ShoppingCart,
+  Boxes,
+  MapPin,
+  Package,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/customers", icon: Users, label: "Customers" },
-  { href: "/plans", icon: FileText, label: "Service Plans" },
-  { href: "/billing", icon: CreditCard, label: "Billing" },
-  { href: "/recommendations", icon: BrainCircuit, label: "AI Recommendations" },
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/settings", icon: Settings, label: "Settings" },
+    { href: "/customers", icon: Users, label: "Subscribers" },
+    { href: "/online-subscribers", icon: Wifi, label: "Online Subscribers" },
+    { href: "/access-request-log", icon: FileClock, label: "Access Request Log" },
+    { href: "/reports", icon: BarChart2, label: "Reports" },
+    { href: "/nat-logs", icon: FileCode, label: "NAT Logs" },
+    { href: "/tickets", icon: Ticket, label: "Tickets" },
+    { href: "/leads", icon: UserPlus, label: "Leads" },
+    { href: "/package-sales", icon: ShoppingCart, label: "Package Sales" },
+    { href: "/billing", icon: FileText, label: "Invoice" },
+    { href: "/payment", icon: CreditCard, label: "Payment" },
+    { href: "/inventory", icon: Boxes, label: "Inventory" },
+    { href: "/zones", icon: MapPin, label: "Zones" },
+    { href: "/plans", icon: Package, label: "Package" },
 ];
 
 const bottomNavItems = [

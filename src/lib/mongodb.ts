@@ -9,12 +9,12 @@ const MONGODB_URI = process.env.MONGODB_URI;
 // Check if we're using external backend
 const useExternalBackend = process.env.NEXT_PUBLIC_USE_EXTERNAL_BACKEND === 'true';
 
-if (!MONGODB_URI && !useExternalBackend) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
-}
+// Provide a default dummy URI for build process if none is set
+const connectionUri = MONGODB_URI || 'mongodb://dummy:27017/dummy';
 
-// If using external backend and no MONGODB_URI, provide a dummy URI for build process
-const connectionUri = MONGODB_URI || (useExternalBackend ? 'mongodb://dummy:27017/dummy' : '');
+if (!MONGODB_URI) {
+  console.warn('MONGODB_URI not set. Using dummy URI. Make sure to set MONGODB_URI in production if not using external backend.');
+}
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -33,6 +33,11 @@ async function connectDB() {
     throw new Error('MongoDB connection not available when using external backend');
   }
 
+  // If no real MONGODB_URI is set and not using dummy, throw error at runtime
+  if (!MONGODB_URI && connectionUri === 'mongodb://dummy:27017/dummy') {
+    throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -42,7 +47,7 @@ async function connectDB() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(connectionUri!, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(connectionUri, opts).then((mongoose) => {
       return mongoose;
     });
   }

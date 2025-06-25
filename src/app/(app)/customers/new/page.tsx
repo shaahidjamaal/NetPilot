@@ -37,6 +37,8 @@ import { useCustomers } from "@/hooks/use-customers"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useZones } from "@/hooks/use-zones"
 import { Separator } from "@/components/ui/separator"
+import { useSettings } from "@/hooks/use-settings"
+import { generateSuffix } from "@/lib/id-generation"
 
 const newCustomerSchema = z.object({
   id: z.string().min(1, "Customer ID is required."),
@@ -87,6 +89,7 @@ export default function AddCustomerPage() {
   const { zones, isLoading: isLoadingZones } = useZones()
   const { addCustomer } = useCustomers()
   const [showPassword, setShowPassword] = React.useState(false);
+  const { settings, isLoading: isLoadingSettings } = useSettings()
   
   const form = useForm<z.infer<typeof newCustomerSchema>>({
     resolver: zodResolver(newCustomerSchema),
@@ -109,6 +112,13 @@ export default function AddCustomerPage() {
     },
   })
   
+  React.useEffect(() => {
+    if (!isLoadingSettings && settings) {
+      const suffix = generateSuffix(settings.customerIdSuffix);
+      form.setValue('id', `${settings.customerIdPrefix}${suffix}`);
+    }
+  }, [settings, isLoadingSettings, form]);
+
   const sameAsPermanent = form.watch("sameAsPermanent");
   const permanentAddress = form.watch("permanentAddress");
   const customerType = form.watch("customerType");
@@ -158,8 +168,9 @@ export default function AddCustomerPage() {
                         <FormItem>
                           <FormLabel>Customer ID</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., CUST001" {...field} />
+                            <Input placeholder="Generating ID..." {...field} />
                           </FormControl>
+                          <FormDescription>This ID is pre-generated but can be edited.</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

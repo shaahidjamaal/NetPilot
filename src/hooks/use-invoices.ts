@@ -1,4 +1,3 @@
-
 'use client'
 
 import { type Invoice, type Customer, type Package } from '@/lib/types';
@@ -72,7 +71,8 @@ export function useInvoices() {
         const today = new Date();
         
         const suffix = generateSuffix(settings.invoiceSuffix);
-        const uniquePart = `-${data.customerId.slice(-4)}`;
+        const numericIdPart = data.customerId.split('-').pop() || '';
+        const uniquePart = `-${numericIdPart}`;
 
         const newInvoice: Invoice = {
             id: `${settings.invoicePrefix}${suffix}${uniquePart}`,

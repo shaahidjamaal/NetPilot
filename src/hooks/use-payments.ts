@@ -1,4 +1,3 @@
-
 'use client'
 
 import { type Payment, type PaymentMethod } from '@/lib/types';
@@ -6,9 +5,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 
 const initialPayments: Payment[] = [
-  { id: 'pay_1', invoiceId: 'INV-20240701-us_1', customerId: 'cus_1', customerName: 'John Doe', amount: 3799, paymentDate: new Date('2024-07-01').toISOString(), method: 'Online Gateway', status: 'Completed', transactionId: 'txn_12345' },
-  { id: 'pay_2', invoiceId: 'INV-20240625-us_2', customerId: 'cus_2', customerName: 'Jane Smith', amount: 2499, paymentDate: new Date('2024-06-25').toISOString(), method: 'Admin Renewal', status: 'Completed', transactionId: 'txn_67890' },
-  { id: 'pay_3', invoiceId: 'INV-20240705-us_4', customerId: 'cus_4', customerName: 'Emily Davis', amount: 7499, paymentDate: new Date('2024-07-05').toISOString(), method: 'Bank Transfer', status: 'Completed', transactionId: 'txn_11223' },
+  { id: 'pay_1', invoiceId: 'INV-20240701-us_1', customerId: 'CUS-1', customerName: 'John Doe', amount: 3799, paymentDate: new Date('2024-07-01').toISOString(), method: 'Online Gateway', status: 'Completed', transactionId: 'txn_12345' },
+  { id: 'pay_2', invoiceId: 'INV-20240625-us_2', customerId: 'CUS-2', customerName: 'Jane Smith', amount: 2499, paymentDate: new Date('2024-06-25').toISOString(), method: 'Admin Renewal', status: 'Completed', transactionId: 'txn_67890' },
+  { id: 'pay_3', invoiceId: 'INV-20240705-us_4', customerId: 'CUS-4', customerName: 'Emily Davis', amount: 7499, paymentDate: new Date('2024-07-05').toISOString(), method: 'Bank Transfer', status: 'Completed', transactionId: 'txn_11223' },
 ];
 
 const STORAGE_KEY = 'netpilot-payments';

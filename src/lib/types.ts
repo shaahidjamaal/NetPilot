@@ -1,7 +1,4 @@
 
-
-
-
 export const allPermissions = [
   "manage_users",
   "manage_roles",
@@ -137,4 +134,24 @@ export type Payment = {
   method: PaymentMethod;
   status: PaymentStatus;
   transactionId?: string;
+};
+
+
+export const idSuffixOptions = ['timestamp', 'date', 'month_year', 'year', 'random_4', 'none'] as const;
+export type IdSuffixType = (typeof idSuffixOptions)[number];
+
+export const idSuffixLabels: Record<IdSuffixType, string> = {
+    timestamp: "Timestamp (e.g., 1672531200000)",
+    date: "Date (e.g., 20230101)",
+    month_year: "Month & Year (e.g., 012023)",
+    year: "Year (e.g., 2023)",
+    random_4: "4 Random Digits",
+    none: "None"
+};
+
+export type AppSettings = {
+  invoicePrefix: string;
+  invoiceSuffix: IdSuffixType;
+  customerIdPrefix: string;
+  customerIdSuffix: IdSuffixType;
 };

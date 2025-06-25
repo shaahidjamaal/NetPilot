@@ -6,6 +6,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useCustomers } from './use-customers';
 import { usePackages } from './use-packages';
 import { addDays, format } from 'date-fns';
+import { useSettings } from './use-settings';
+import { generateSuffix } from '@/lib/id-generation';
 
 const STORAGE_KEY = 'netpilot-invoices';
 
@@ -24,6 +26,7 @@ export function useInvoices() {
     const [isLoading, setIsLoading] = useState(true);
     const { customers, isLoading: isLoadingCustomers } = useCustomers();
     const { packages, isLoading: isLoadingPackages } = usePackages();
+    const { settings } = useSettings();
 
     useEffect(() => {
         if (isLoadingCustomers || isLoadingPackages) return;
@@ -67,8 +70,12 @@ export function useInvoices() {
         const finalAmount = (basePrice - discountAmount) + additionalCharges;
 
         const today = new Date();
+        
+        const suffix = generateSuffix(settings.invoiceSuffix);
+        const uniquePart = `-${data.customerId.slice(-4)}`;
+
         const newInvoice: Invoice = {
-            id: `INV-${format(today, 'yyyyMMdd')}-${customer.id.slice(-4)}`,
+            id: `${settings.invoicePrefix}${suffix}${uniquePart}`,
             customerId: customer.id,
             customerName: customer.name,
             amount: Math.round(finalAmount),
@@ -85,7 +92,7 @@ export function useInvoices() {
         updateLocalStorage(newInvoices);
         return newInvoice;
 
-    }, [customers, packages, invoices, updateLocalStorage]);
+    }, [customers, packages, invoices, updateLocalStorage, settings]);
     
     const markAsPaid = useCallback((invoiceId: string) => {
         const newInvoices = invoices.map(inv => 

@@ -21,8 +21,8 @@ export async function testMikrotikConnection() {
     const { host, user, password } = creds;
 
     try {
-        // Dynamically require the library inside the server action
-        // to ensure it's only loaded on the server when needed.
+        // This library is server-side only. We require it here inside the server action.
+        // The webpack config in next.config.ts provides empty fallbacks for the client bundler.
         const RouterOS = require('node-routeros');
 
         // The library is untyped, so we handle it carefully.

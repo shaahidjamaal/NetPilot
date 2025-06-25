@@ -1,4 +1,6 @@
 
+export type PackageType = "Home Package" | "Business Package" | "Wireless Package";
+
 export type Package = {
   name: string;
   description?: string;
@@ -7,6 +9,7 @@ export type Package = {
   downloadSpeed: number;
   uploadSpeed: number;
   dataLimit: string;
+  packageType: PackageType;
   users?: string;
   burstEnabled?: boolean;
   burstDownloadSpeed?: number;

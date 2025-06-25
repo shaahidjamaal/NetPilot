@@ -32,11 +32,13 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { usePackages } from "@/hooks/use-packages"
-import { type Package } from "@/lib/types"
+import { type Package, type PackageType } from "@/lib/types"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const newPackageSchema = z.object({
   name: z.string().min(3, "Package name must be at least 3 characters."),
   description: z.string().optional(),
+  packageType: z.enum(["Home Package", "Business Package", "Wireless Package"], { required_error: "Please select a package type." }),
   price: z.coerce.number().positive("Price must be a positive number."),
   validity: z.coerce.number().int().positive("Validity must be a positive number of days."),
   downloadSpeed: z.coerce.number().positive("Download speed must be positive."),
@@ -143,6 +145,30 @@ export default function EditPackagePage() {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="packageType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Package Type</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a package type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Home Package">Home Package</SelectItem>
+                              <SelectItem value="Business Package">Business Package</SelectItem>
+                              <SelectItem value="Wireless Package">Wireless Package</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
+                 <div className="grid grid-cols-1 gap-6">
                     <FormField
                       control={form.control}
                       name="description"

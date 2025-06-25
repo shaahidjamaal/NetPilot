@@ -1,14 +1,14 @@
 
 'use client'
 
-import { type Package } from '@/lib/types';
+import { type Package, type PackageType } from '@/lib/types';
 import { useState, useEffect, useCallback } from 'react';
 
 const initialPackages: Package[] = [
-  { name: "Basic DSL", price: 2499, downloadSpeed: 25, uploadSpeed: 5, dataLimit: "Unlimited", validity: 30, users: "1-2" },
-  { name: "Fiber 100", price: 3999, downloadSpeed: 100, uploadSpeed: 20, dataLimit: "Unlimited", validity: 30, users: "3-5" },
-  { name: "Fiber 500", price: 5799, downloadSpeed: 500, uploadSpeed: 100, dataLimit: "Unlimited", validity: 30, users: "5-10" },
-  { name: "Fiber 1000", price: 7499, downloadSpeed: 1000, uploadSpeed: 250, dataLimit: "Unlimited", validity: 30, users: "10+" },
+  { name: "Basic DSL", price: 2499, downloadSpeed: 25, uploadSpeed: 5, dataLimit: "Unlimited", validity: 30, users: "1-2", packageType: "Home Package" },
+  { name: "Fiber 100", price: 3999, downloadSpeed: 100, uploadSpeed: 20, dataLimit: "Unlimited", validity: 30, users: "3-5", packageType: "Home Package" },
+  { name: "Fiber 500", price: 5799, downloadSpeed: 500, uploadSpeed: 100, dataLimit: "Unlimited", validity: 30, users: "5-10", packageType: "Business Package" },
+  { name: "Fiber 1000", price: 7499, downloadSpeed: 1000, uploadSpeed: 250, dataLimit: "Unlimited", validity: 30, users: "10+", packageType: "Business Package" },
 ]
 
 const STORAGE_KEY = 'netpilot-packages';
@@ -21,7 +21,13 @@ export function usePackages() {
     try {
       const item = window.localStorage.getItem(STORAGE_KEY);
       if (item) {
-        setPackages(JSON.parse(item));
+        const parsedPackages = JSON.parse(item);
+        // Add default packageType if missing for backward compatibility
+        const packagesWithDefaults = parsedPackages.map((p: Package) => ({
+            ...p,
+            packageType: p.packageType || (p.downloadSpeed > 200 ? 'Business Package' : 'Home Package')
+        }));
+        setPackages(packagesWithDefaults);
       } else {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(initialPackages));
         setPackages(initialPackages);

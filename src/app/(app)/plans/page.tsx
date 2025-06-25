@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Download, Gauge, PlusCircle, Upload, Users, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { usePackages } from "@/hooks/use-packages"
+import { Badge } from "@/components/ui/badge"
 
 export default function PackagesPage() {
   const { packages, isLoading } = usePackages()
@@ -34,8 +35,11 @@ export default function PackagesPage() {
           {packages.map((pkg) => (
             <Card key={pkg.name} className="flex flex-col">
               <CardHeader>
-                <CardTitle>{pkg.name}</CardTitle>
-                <CardDescription>
+                <div className="flex justify-between items-center">
+                  <CardTitle>{pkg.name}</CardTitle>
+                  {pkg.packageType && <Badge variant="outline">{pkg.packageType}</Badge>}
+                </div>
+                <CardDescription className="!mt-2">
                   <span className="text-3xl font-bold text-primary">₹{pkg.price.toLocaleString('en-IN')}</span>
                   /month
                 </CardDescription>

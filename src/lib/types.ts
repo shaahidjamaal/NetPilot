@@ -109,6 +109,10 @@ export type Invoice = {
   packagePrice: number;
   discount: number;
   additionalCharges: number;
+  // New fields for tax breakdown. Optional for backward compatibility.
+  subtotal?: number;
+  cgstAmount?: number;
+  sgstAmount?: number;
 };
 
 export const inventoryCategories = ["Routers", "Switches", "Cabling", "Accessories"] as const;

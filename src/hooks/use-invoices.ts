@@ -8,6 +8,7 @@ import { usePackages } from './use-packages';
 import { addDays, format } from 'date-fns';
 import { useSettings } from './use-settings';
 import { generateSuffix } from '@/lib/id-generation';
+import { useBillingProfile } from './use-billing-profile';
 
 const STORAGE_KEY = 'netpilot-invoices';
 
@@ -26,10 +27,11 @@ export function useInvoices() {
     const [isLoading, setIsLoading] = useState(true);
     const { customers, isLoading: isLoadingCustomers } = useCustomers();
     const { packages, isLoading: isLoadingPackages } = usePackages();
-    const { settings } = useSettings();
+    const { settings, isLoading: isLoadingSettings } = useSettings();
+    const { profile, isLoading: isLoadingProfile } = useBillingProfile();
 
     useEffect(() => {
-        if (isLoadingCustomers || isLoadingPackages) return;
+        if (isLoadingCustomers || isLoadingPackages || isLoadingSettings || isLoadingProfile) return;
 
         try {
             const item = window.localStorage.getItem(STORAGE_KEY);
@@ -44,7 +46,7 @@ export function useInvoices() {
             setInvoices(initialInvoices);
         }
         setIsLoading(false);
-    }, [isLoadingCustomers, isLoadingPackages]);
+    }, [isLoadingCustomers, isLoadingPackages, isLoadingSettings, isLoadingProfile]);
 
     const updateLocalStorage = useCallback((newInvoices: Invoice[]) => {
         try {
@@ -59,15 +61,24 @@ export function useInvoices() {
         const customer = customers.find(c => c.id === data.customerId);
         const servicePackage = packages.find(p => p.name === data.packageName);
 
-        if (!customer || !servicePackage) {
-            throw new Error("Selected customer or package not found.");
+        if (!customer || !servicePackage || !profile) {
+            throw new Error("Selected customer, package, or billing profile not found.");
         }
 
         const discount = data.discountOverride !== undefined ? data.discountOverride : (customer.discount || 0);
         const basePrice = servicePackage.price;
         const additionalCharges = data.additionalCharges || 0;
         const discountAmount = basePrice * (discount / 100);
-        const finalAmount = (basePrice - discountAmount) + additionalCharges;
+        
+        const subtotal = (basePrice - discountAmount) + additionalCharges;
+        
+        const cgstRate = profile.cgstRate || 0;
+        const sgstRate = profile.sgstRate || 0;
+
+        const cgstAmount = subtotal * (cgstRate / 100);
+        const sgstAmount = subtotal * (sgstRate / 100);
+
+        const finalAmount = subtotal + cgstAmount + sgstAmount;
 
         const today = new Date();
         
@@ -87,13 +98,16 @@ export function useInvoices() {
             packagePrice: basePrice,
             discount: discount,
             additionalCharges: additionalCharges,
+            subtotal: subtotal,
+            cgstAmount: cgstAmount,
+            sgstAmount: sgstAmount,
         };
 
         const newInvoices = [newInvoice, ...invoices].sort((a, b) => new Date(b.generatedDate).getTime() - new Date(a.generatedDate).getTime());
         updateLocalStorage(newInvoices);
         return newInvoice;
 
-    }, [customers, packages, invoices, updateLocalStorage, settings]);
+    }, [customers, packages, invoices, updateLocalStorage, settings, profile]);
     
     const markAsPaid = useCallback((invoiceId: string) => {
         const newInvoices = invoices.map(inv => 
@@ -111,7 +125,7 @@ export function useInvoices() {
         return invoices.find(inv => inv.id === invoiceId);
     }, [invoices]);
 
-    const hookIsLoading = isLoading || isLoadingCustomers || isLoadingPackages;
+    const hookIsLoading = isLoading || isLoadingCustomers || isLoadingPackages || isLoadingSettings || isLoadingProfile;
 
     return { invoices, addInvoice, markAsPaid, deleteInvoice, getInvoiceById, isLoading: hookIsLoading, customers, packages };
 }

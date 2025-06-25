@@ -5,6 +5,7 @@ import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useInvoices } from "@/hooks/use-invoices"
 import { useCustomers } from "@/hooks/use-customers"
+import { useBillingProfile } from "@/hooks/use-billing-profile"
 import { type Invoice, type Customer } from "@/lib/types"
 
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,7 @@ export default function ViewInvoicePage() {
   const id = params.id as string
   const { getInvoiceById, isLoading: isLoadingInvoices } = useInvoices()
   const { getCustomerById, isLoading: isLoadingCustomers } = useCustomers()
+  const { profile, isLoading: isLoadingProfile } = useBillingProfile()
   
   const [invoice, setInvoice] = React.useState<Invoice | undefined>(undefined)
   const [customer, setCustomer] = React.useState<Customer | undefined>(undefined)
@@ -53,13 +55,20 @@ export default function ViewInvoicePage() {
     window.print()
   }
   
-  if (isLoadingInvoices || isLoadingCustomers || !invoice || !customer) {
+  if (isLoadingInvoices || isLoadingCustomers || isLoadingProfile || !invoice || !customer || !profile) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
+
+  const subtotal = invoice.subtotal !== undefined 
+    ? invoice.subtotal 
+    : invoice.packagePrice + invoice.additionalCharges - (invoice.packagePrice * (invoice.discount / 100));
+
+  const cgstAmount = invoice.cgstAmount ?? 0;
+  const sgstAmount = invoice.sgstAmount ?? 0;
   
   return (
     <div>
@@ -78,8 +87,10 @@ export default function ViewInvoicePage() {
             <CardHeader className="space-y-4">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-2xl font-bold">NetPilot ISP</h1>
-                        <p className="text-muted-foreground">123 Tech Street, Silicon Valley, CA 94000</p>
+                        <h1 className="text-2xl font-bold">{profile.companyName}</h1>
+                        <p className="text-muted-foreground">{`${profile.address}, ${profile.city}`}</p>
+                        <p className="text-muted-foreground">{`${profile.state}, ${profile.country} - ${profile.zip}`}</p>
+                        {profile.gstNumber && <p className="text-muted-foreground">GSTIN: {profile.gstNumber}</p>}
                     </div>
                      <div className="text-right">
                         <h2 className="text-3xl font-bold text-primary">INVOICE</h2>
@@ -148,6 +159,18 @@ export default function ViewInvoicePage() {
             <CardFooter>
                  <div className="w-full flex justify-end">
                     <div className="w-full max-w-sm space-y-2">
+                        <div className="flex justify-between">
+                            <p>Subtotal</p>
+                            <p>₹{subtotal.toFixed(2)}</p>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                            <p>CGST</p>
+                            <p>₹{cgstAmount.toFixed(2)}</p>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                            <p>SGST</p>
+                            <p>₹{sgstAmount.toFixed(2)}</p>
+                        </div>
                         <Separator />
                         <div className="flex justify-between font-semibold text-lg">
                             <p>Total</p>
@@ -159,7 +182,7 @@ export default function ViewInvoicePage() {
         </Card>
         
         <div className="mt-8 text-center text-xs text-muted-foreground print:block hidden">
-            <p>Thank you for your business!</p>
+            <p>{profile.invoiceTerms}</p>
             <p>For any queries regarding this invoice, please contact support@netpilot.com</p>
         </div>
     </div>

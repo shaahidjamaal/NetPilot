@@ -178,6 +178,13 @@ export default function EditCustomerPage() {
             <div className="space-y-4">
                 <h3 className="text-lg font-medium">Personal Details</h3>
                 <div className="grid md:grid-cols-2 gap-6">
+                    <FormItem>
+                        <FormLabel>Customer ID</FormLabel>
+                        <FormControl>
+                            <Input value={customer.id} disabled />
+                        </FormControl>
+                        <FormDescription>Customer ID cannot be changed.</FormDescription>
+                    </FormItem>
                     <FormField
                     control={form.control}
                     name="name"
@@ -191,6 +198,8 @@ export default function EditCustomerPage() {
                         </FormItem>
                     )}
                     />
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
                     <FormField
                     control={form.control}
                     name="email"
@@ -204,8 +213,6 @@ export default function EditCustomerPage() {
                         </FormItem>
                     )}
                     />
-                </div>
-                <div className="grid md:grid-cols-2 gap-6">
                     <FormField
                     control={form.control}
                     name="mobile"
@@ -219,6 +226,8 @@ export default function EditCustomerPage() {
                         </FormItem>
                     )}
                     />
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
                     <FormField
                     control={form.control}
                     name="customerType"
@@ -241,24 +250,22 @@ export default function EditCustomerPage() {
                         </FormItem>
                     )}
                     />
-                </div>
-                {customerType === 'Business User' && (
-                <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                    control={form.control}
-                    name="gstNumber"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>GST Number</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., 29AAAAA0000A1Z5" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
+                    {customerType === 'Business User' && (
+                        <FormField
+                        control={form.control}
+                        name="gstNumber"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>GST Number</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g., 29AAAAA0000A1Z5" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                     )}
-                    />
                 </div>
-                )}
             </div>
 
             <Separator/>

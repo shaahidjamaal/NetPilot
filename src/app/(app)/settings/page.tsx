@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -31,6 +30,12 @@ export default function SettingsPage() {
 
   const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: zodResolver(settingsSchema),
+    defaultValues: {
+        invoicePrefix: "",
+        invoiceSuffix: "date",
+        customerIdPrefix: "",
+        customerIdSuffix: "timestamp",
+    }
   })
 
   React.useEffect(() => {

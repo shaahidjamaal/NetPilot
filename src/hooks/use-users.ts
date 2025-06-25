@@ -62,7 +62,17 @@ export function useUsers() {
   }, [users, updateLocalStorage]);
 
   const login = useCallback(async (email: string, password?: string): Promise<User | null> => {
-    const foundUser = users.find(u => u.email === email);
+    // Read directly from localStorage to avoid state-related race conditions.
+    let userList: User[] = [];
+    try {
+      const item = window.localStorage.getItem(STORAGE_KEY);
+      userList = item ? JSON.parse(item) : initialUsers;
+    } catch (error) {
+      console.error("Failed to read users from localStorage during login", error);
+      userList = initialUsers;
+    }
+    
+    const foundUser = userList.find(u => u.email === email);
 
     if (foundUser && foundUser.enabled && foundUser.password === password) {
       const { password: _, ...userToReturn } = foundUser;
@@ -70,7 +80,7 @@ export function useUsers() {
     }
     
     return null;
-  }, [users]);
+  }, []);
 
 
   return { users, login, addUser, updateUser, deleteUser, isLoading };

@@ -160,12 +160,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-10 w-10">
-                        <AvatarImage src="https://placehold.co/40x40" alt="@user" data-ai-hint="avatar" />
-                        <AvatarFallback>{user?.email?.charAt(0).toUpperCase() ?? 'A'}</AvatarFallback>
-                    </Avatar>
-                </Button>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Avatar>
+                  <AvatarImage
+                    src="https://placehold.co/40x40"
+                    alt="@user"
+                    data-ai-hint="avatar"
+                  />
+                  <AvatarFallback>
+                    {user?.email?.charAt(0).toUpperCase() ?? "A"}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">

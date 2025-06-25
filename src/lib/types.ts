@@ -75,6 +75,9 @@ export type Customer = {
   lastRechargeDate?: string; // Should be ISO date string
   expiryDate?: string; // Should be ISO date string
   gstNumber?: string;
+  pppoeUsername?: string;
+  pppoePassword?: string;
+  discount?: number;
 };
 
 export type Zone = {

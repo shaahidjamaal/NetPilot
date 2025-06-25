@@ -166,13 +166,15 @@ export default function CustomerDetailPage() {
                          <div className="md:col-span-2">
                              <Card>
                                  <CardHeader>
-                                     <CardTitle>Package & Usage</CardTitle>
+                                     <CardTitle>Package, Usage & Authentication</CardTitle>
                                  </CardHeader>
                                  <CardContent className="grid gap-6 md:grid-cols-2">
                                      <DetailItem label="Current Package" value={customer.servicePackage} />
                                      <DetailItem label="Data Limit" value={currentPackage?.dataLimit || "N/A"} />
                                      <DetailItem label="Download Speed" value={`${currentPackage?.downloadSpeed || 'N/A'} Mbps`} />
                                      <DetailItem label="Upload Speed" value={`${currentPackage?.uploadSpeed || 'N/A'} Mbps`} />
+                                     <DetailItem label="PPPoE Username" value={customer.pppoeUsername} />
+                                     <DetailItem label="Discount" value={customer.discount ? `${customer.discount}%` : 'N/A'} />
                                      <DetailItem label="Last Recharge" value={customer.lastRechargeDate ? format(new Date(customer.lastRechargeDate), "PPP") : 'N/A'} />
                                      <DetailItem label="Expires At" value={customer.expiryDate ? format(new Date(customer.expiryDate), "PPP") : 'N/A'} />
                                      <DetailItem label="Data Top-up Balance" value={`${customer.dataTopUp || 0} GB`} />

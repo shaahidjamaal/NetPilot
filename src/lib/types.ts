@@ -1,4 +1,5 @@
 
+
 export const allPermissions = [
   "manage_users",
   "manage_roles",
@@ -93,4 +94,16 @@ export type User = {
   designation: string;
   roleId: string;
   enabled: boolean;
+};
+
+export type InvoiceStatus = "Paid" | "Unpaid" | "Overdue";
+
+export type Invoice = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  amount: number;
+  dueDate: string; // ISO date string
+  generatedDate: string; // ISO date string
+  status: InvoiceStatus;
 };

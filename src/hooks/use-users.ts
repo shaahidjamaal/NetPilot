@@ -16,23 +16,28 @@ export function useUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  // Function to read users from localStorage
+  const getUsersFromStorage = (): User[] => {
     try {
       const item = window.localStorage.getItem(STORAGE_KEY);
-      if (item) {
-        setUsers(JSON.parse(item));
-      } else {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(initialUsers));
-        setUsers(initialUsers);
-      }
+      return item ? JSON.parse(item) : initialUsers;
     } catch (error) {
-      console.error(error);
-      setUsers(initialUsers);
+      console.error("Failed to read users from localStorage", error);
+      return initialUsers;
     }
+  };
+
+  useEffect(() => {
+    const usersFromStorage = getUsersFromStorage();
+    // Ensure localStorage is populated on first run
+    if (!window.localStorage.getItem(STORAGE_KEY)) {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(usersFromStorage));
+    }
+    setUsers(usersFromStorage);
     setIsLoading(false);
   }, []);
 
-  const updateLocalStorage = useCallback((newUsers: User[]) => {
+  const updateLocalStorageAndState = useCallback((newUsers: User[]) => {
     try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newUsers));
         setUsers(newUsers);
@@ -42,36 +47,29 @@ export function useUsers() {
   }, []);
 
   const addUser = useCallback((userData: Omit<User, 'id'>) => {
+    const currentUsers = getUsersFromStorage();
     const newUser: User = {
       ...userData,
       id: `user_${new Date().getTime()}`,
     };
-    
-    const newUsers = [...users, newUser];
-    updateLocalStorage(newUsers);
-  }, [users, updateLocalStorage]);
+    const newUsers = [...currentUsers, newUser];
+    updateLocalStorageAndState(newUsers);
+  }, [updateLocalStorageAndState]);
 
   const updateUser = useCallback((id: string, updatedUserData: Partial<Omit<User, 'id'>>) => {
-    const newUsers = users.map(u => u.id === id ? { ...u, ...updatedUserData } : u);
-    updateLocalStorage(newUsers);
-  }, [users, updateLocalStorage]);
+    const currentUsers = getUsersFromStorage();
+    const newUsers = currentUsers.map(u => u.id === id ? { ...u, ...updatedUserData } : u);
+    updateLocalStorageAndState(newUsers);
+  }, [updateLocalStorageAndState]);
 
   const deleteUser = useCallback((id: string) => {
-      const newUsers = users.filter(u => u.id !== id);
-      updateLocalStorage(newUsers);
-  }, [users, updateLocalStorage]);
+    const currentUsers = getUsersFromStorage();
+    const newUsers = currentUsers.filter(u => u.id !== id);
+    updateLocalStorageAndState(newUsers);
+  }, [updateLocalStorageAndState]);
 
   const login = useCallback(async (email: string, password?: string): Promise<User | null> => {
-    // Read directly from localStorage to avoid state-related race conditions.
-    let userList: User[] = [];
-    try {
-      const item = window.localStorage.getItem(STORAGE_KEY);
-      userList = item ? JSON.parse(item) : initialUsers;
-    } catch (error) {
-      console.error("Failed to read users from localStorage during login", error);
-      userList = initialUsers;
-    }
-    
+    const userList = getUsersFromStorage();
     const foundUser = userList.find(u => u.email === email);
 
     if (foundUser && foundUser.enabled && foundUser.password === password) {

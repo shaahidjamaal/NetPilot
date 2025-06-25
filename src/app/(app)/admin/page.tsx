@@ -5,7 +5,7 @@ import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { PlusCircle, MoreHorizontal, Loader2 } from "lucide-react"
+import { PlusCircle, MoreHorizontal, Loader2, Eye, EyeOff } from "lucide-react"
 
 import { useUsers } from "@/hooks/use-users"
 import { useRoles } from "@/hooks/use-roles"
@@ -27,13 +27,23 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 // Schemas
-const userSchema = z.object({
+const userBaseSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   userType: z.enum(["Admin Staff", "Office Staff"], { required_error: "Please select a user type." }),
   designation: z.string().min(2, "Designation must be at least 2 characters."),
   roleId: z.string({ required_error: "Please select a role." }),
   enabled: z.boolean().default(true),
 })
+
+const newUserSchema = userBaseSchema.extend({
+  password: z.string().min(6, "Password must be at least 6 characters."),
+})
+
+const editUserSchema = userBaseSchema.extend({
+  password: z.string().min(6, "New password must be at least 6 characters.").optional().or(z.literal('')),
+})
+
+type UserFormValues = z.infer<typeof userBaseSchema> & { password?: string }
 
 const roleSchema = z.object({
   name: z.string().min(2, "Role name must be at least 2 characters."),
@@ -42,16 +52,22 @@ const roleSchema = z.object({
 })
 
 // User Form Component
-function UserForm({ user, onFormSubmit, closeDialog }: { user?: User, onFormSubmit: (values: z.infer<typeof userSchema>) => void, closeDialog: () => void }) {
+function UserForm({ user, onFormSubmit, closeDialog }: { user?: User, onFormSubmit: (values: UserFormValues) => void, closeDialog: () => void }) {
   const { roles, isLoading: isLoadingRoles } = useRoles()
-  const form = useForm<z.infer<typeof userSchema>>({
-    resolver: zodResolver(userSchema),
-    defaultValues: user ? user : {
+  const [showPassword, setShowPassword] = React.useState(false)
+
+  const form = useForm<UserFormValues>({
+    resolver: zodResolver(user ? editUserSchema : newUserSchema),
+    defaultValues: user ? {
+        ...user,
+        password: ""
+    } : {
       email: "",
       userType: "Office Staff",
       designation: "",
       roleId: undefined,
       enabled: true,
+      password: "",
     },
   })
 
@@ -65,6 +81,32 @@ function UserForm({ user, onFormSubmit, closeDialog }: { user?: User, onFormSubm
             <FormItem>
               <FormLabel>Email Address</FormLabel>
               <FormControl><Input placeholder="user@example.com" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{user ? 'New Password' : 'Password'}</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input type={showPassword ? 'text' : 'password'} placeholder="••••••••" {...field} />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </FormControl>
+              {user && <FormDescription>Leave blank to keep the current password.</FormDescription>}
               <FormMessage />
             </FormItem>
           )}
@@ -150,15 +192,20 @@ function UserManagementTab() {
   const openDialogForEdit = (user: User) => { setEditingUser(user); setIsUserDialogOpen(true) }
   const openDialogForNew = () => { setEditingUser(undefined); setIsUserDialogOpen(true) }
 
-  const handleFormSubmit = (values: z.infer<typeof userSchema>) => {
+  const handleFormSubmit = (values: UserFormValues) => {
     if (editingUser) {
-        updateUser(editingUser.id, values);
+        const updateData: Partial<User> = { ...values };
+        if (!values.password) {
+            delete updateData.password;
+        }
+        updateUser(editingUser.id, updateData);
         toast({ title: "User Updated", description: `${values.email} has been updated.` })
     } else {
         addUser(values as Omit<User, 'id'>)
         toast({ title: "User Created", description: `${values.email} has been created.` })
     }
     setIsUserDialogOpen(false)
+    form.reset();
   }
 
   const handleDeleteUser = (user: User) => {

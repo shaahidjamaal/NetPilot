@@ -5,9 +5,9 @@ import { type User } from '@/lib/types';
 import { useState, useEffect, useCallback } from 'react';
 
 const initialUsers: User[] = [
-  { id: 'user_1', email: 'admin@example.com', userType: 'Admin Staff', designation: 'Super Admin', roleId: 'role_1', enabled: true },
-  { id: 'user_2', email: 'staff@example.com', userType: 'Office Staff', designation: 'Billing Clerk', roleId: 'role_2', enabled: true },
-  { id: 'user_3', email: 'support@example.com', userType: 'Office Staff', designation: 'Support Agent', roleId: 'role_3', enabled: false },
+  { id: 'user_1', email: 'admin@example.com', password: 'password', userType: 'Admin Staff', designation: 'Super Admin', roleId: 'role_1', enabled: true },
+  { id: 'user_2', email: 'staff@example.com', password: 'password', userType: 'Office Staff', designation: 'Billing Clerk', roleId: 'role_2', enabled: true },
+  { id: 'user_3', email: 'support@example.com', password: 'password', userType: 'Office Staff', designation: 'Support Agent', roleId: 'role_3', enabled: false },
 ]
 
 const STORAGE_KEY = 'netpilot-users';
@@ -73,8 +73,8 @@ export function useUsers() {
     const user = currentUsers.find(u => u.email === email);
 
     // In a real app, you'd also check the password.
-    // For this prototype, we'll just check if the user exists and is enabled.
-    if (user && user.enabled) {
+    // For this prototype, we'll check the password.
+    if (user && user.enabled && user.password === password) {
       return user;
     }
 

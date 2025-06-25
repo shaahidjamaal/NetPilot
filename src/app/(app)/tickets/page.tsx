@@ -241,7 +241,7 @@ export default function TicketsPage() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>Support Tickets</CardTitle>
               <CardDescription>Track and manage customer support tickets.</CardDescription>
@@ -260,10 +260,10 @@ export default function TicketsPage() {
                 <TableRow>
                   <TableHead>Ticket</TableHead>
                   <TableHead>Customer</TableHead>
-                  <TableHead>Assigned To</TableHead>
+                  <TableHead className="hidden md:table-cell">Assigned To</TableHead>
                   <TableHead>Priority</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Last Updated</TableHead>
+                  <TableHead className="hidden md:table-cell">Last Updated</TableHead>
                   <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
               </TableHeader>
@@ -277,7 +277,7 @@ export default function TicketsPage() {
                             <div className="text-xs text-muted-foreground">{ticket.id}</div>
                         </TableCell>
                         <TableCell>{ticket.customerName}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                             {assignee ? (
                                 <Badge variant="outline">{assignee.email}</Badge>
                             ) : (
@@ -294,7 +294,7 @@ export default function TicketsPage() {
                             {ticket.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>{format(new Date(ticket.updatedAt), "PPp")}</TableCell>
+                        <TableCell className="hidden md:table-cell">{format(new Date(ticket.updatedAt), "PPp")}</TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

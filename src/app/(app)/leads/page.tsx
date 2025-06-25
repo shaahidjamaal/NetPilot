@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -169,7 +170,7 @@ export default function LeadsPage() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>Leads Management</CardTitle>
               <CardDescription>Track and manage potential new customers.</CardDescription>
@@ -186,10 +187,10 @@ export default function LeadsPage() {
                 <TableRow>
                   <TableHead>Lead Name</TableHead>
                   <TableHead>Contact</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Assigned To</TableHead>
+                  <TableHead className="hidden md:table-cell">Source</TableHead>
+                  <TableHead className="hidden md:table-cell">Assigned To</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Last Updated</TableHead>
+                  <TableHead className="hidden md:table-cell">Last Updated</TableHead>
                   <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
               </TableHeader>
@@ -203,12 +204,12 @@ export default function LeadsPage() {
                             <div>{lead.email}</div>
                             <div className="text-sm text-muted-foreground">{lead.mobile}</div>
                         </TableCell>
-                        <TableCell><Badge variant="outline">{lead.source}</Badge></TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell"><Badge variant="outline">{lead.source}</Badge></TableCell>
+                        <TableCell className="hidden md:table-cell">
                             {assignee ? (<Badge variant="secondary">{assignee.email}</Badge>) : (<span className="text-muted-foreground text-sm">Unassigned</span>)}
                         </TableCell>
                         <TableCell><Badge variant={getStatusBadgeVariant(lead.status)} className={getStatusBadgeClass(lead.status)}>{lead.status}</Badge></TableCell>
-                        <TableCell>{format(new Date(lead.updatedAt), "PP")}</TableCell>
+                        <TableCell className="hidden md:table-cell">{format(new Date(lead.updatedAt), "PP")}</TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Toggle menu</span></Button></DropdownMenuTrigger>

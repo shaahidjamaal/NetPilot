@@ -252,7 +252,7 @@ export default function BillingPage() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>Billing & Invoices</CardTitle>
               <CardDescription>
@@ -279,7 +279,7 @@ export default function BillingPage() {
                   <TableHead>Invoice ID</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Amount</TableHead>
-                  <TableHead>Due Date</TableHead>
+                  <TableHead className="hidden sm:table-cell">Due Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>
                     <span className="sr-only">Actions</span>
@@ -292,7 +292,7 @@ export default function BillingPage() {
                     <TableCell className="font-medium">{invoice.id}</TableCell>
                     <TableCell>{invoice.customerName}</TableCell>
                     <TableCell>₹{invoice.amount.toLocaleString('en-IN')}</TableCell>
-                    <TableCell>{format(new Date(invoice.dueDate), "PPP")}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{format(new Date(invoice.dueDate), "PPP")}</TableCell>
                     <TableCell>
                       <Badge variant={invoice.status === 'Paid' ? 'default' : invoice.status === 'Overdue' ? 'destructive' : 'secondary'}
                       className={`${invoice.status === 'Paid' ? 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' : ''}

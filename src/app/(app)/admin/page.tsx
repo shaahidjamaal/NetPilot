@@ -216,7 +216,7 @@ function UserManagementTab() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>Users</CardTitle>
               <CardDescription>Add, edit, and manage staff accounts.</CardDescription>
@@ -232,8 +232,8 @@ function UserManagementTab() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>User</TableHead>
-                            <TableHead>Designation</TableHead>
-                            <TableHead>Role</TableHead>
+                            <TableHead className="hidden md:table-cell">Designation</TableHead>
+                            <TableHead className="hidden md:table-cell">Role</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
@@ -244,8 +244,8 @@ function UserManagementTab() {
                             return (
                             <TableRow key={user.id}>
                                 <TableCell className="font-medium">{user.email}</TableCell>
-                                <TableCell>{user.designation}</TableCell>
-                                <TableCell><Badge variant="secondary">{role?.name || 'N/A'}</Badge></TableCell>
+                                <TableCell className="hidden md:table-cell">{user.designation}</TableCell>
+                                <TableCell className="hidden md:table-cell"><Badge variant="secondary">{role?.name || 'N/A'}</Badge></TableCell>
                                 <TableCell>
                                     <Badge variant={user.enabled ? 'default' : 'secondary'} className={user.enabled ? 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' : ''}>
                                         {user.enabled ? 'Enabled' : 'Disabled'}
@@ -313,7 +313,7 @@ function RoleForm({ role, onFormSubmit, closeDialog }: { role?: Role, onFormSubm
                 <FormLabel>Permissions</FormLabel>
                 <FormDescription>Select the permissions for this role.</FormDescription>
                 <ScrollArea className="h-64 rounded-md border p-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {allPermissions.map((permissionId) => (
                         <FormField key={permissionId} control={form.control} name="permissions" render={({ field }) => (
                             <FormItem key={permissionId} className="flex flex-row items-start space-x-3 space-y-0">
@@ -375,7 +375,7 @@ function RoleManagementTab() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>Roles</CardTitle>
               <CardDescription>Define roles and assign permissions to them.</CardDescription>
@@ -391,7 +391,7 @@ function RoleManagementTab() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Role</TableHead>
-                            <TableHead>Description</TableHead>
+                            <TableHead className="hidden md:table-cell">Description</TableHead>
                             <TableHead>Permissions</TableHead>
                             <TableHead><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
@@ -400,7 +400,7 @@ function RoleManagementTab() {
                         {roles.length > 0 ? roles.map((role) => (
                             <TableRow key={role.id}>
                                 <TableCell className="font-medium">{role.name}</TableCell>
-                                <TableCell className="text-muted-foreground">{role.description}</TableCell>
+                                <TableCell className="text-muted-foreground hidden md:table-cell">{role.description}</TableCell>
                                 <TableCell>
                                   <div className="flex flex-wrap gap-1">
                                     {role.permissions.slice(0, 3).map(p => <Badge key={p} variant="outline">{permissionLabels[p]}</Badge>)}

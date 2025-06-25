@@ -155,7 +155,7 @@ export default function CustomerDetailPage() {
         <div className="flex flex-col gap-6">
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
                             <Button variant="outline" size="icon" asChild>
                                 <Link href="/customers">
@@ -163,7 +163,7 @@ export default function CustomerDetailPage() {
                                 </Link>
                             </Button>
                             <div>
-                                <CardTitle className="flex items-center gap-2">
+                                <CardTitle className="flex items-center gap-2 flex-wrap">
                                     {customer.name}
                                     <Badge variant={customer.status === 'Active' ? 'default' : customer.status === 'Suspended' ? 'destructive' : 'secondary'}
                                         className={`${customer.status === 'Active' ? 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' : ''}
@@ -186,10 +186,10 @@ export default function CustomerDetailPage() {
             </Card>
 
             <Tabs defaultValue="general">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
                     <TabsTrigger value="general"><User className="mr-2 h-4 w-4" />General Details</TabsTrigger>
-                    <TabsTrigger value="connection"><Wifi className="mr-2 h-4 w-4" />Connection Details</TabsTrigger>
-                    <TabsTrigger value="kyc"><FileText className="mr-2 h-4 w-4" />KYC Documents</TabsTrigger>
+                    <TabsTrigger value="connection"><Wifi className="mr-2 h-4 w-4" />Connection</TabsTrigger>
+                    <TabsTrigger value="kyc"><FileText className="mr-2 h-4 w-4" />KYC Docs</TabsTrigger>
                     <TabsTrigger value="audit"><History className="mr-2 h-4 w-4" />Audit Trail</TabsTrigger>
                 </TabsList>
                 <TabsContent value="general">

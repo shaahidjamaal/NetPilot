@@ -289,7 +289,7 @@ export default function CustomersPage() {
               <CardTitle>Customers</CardTitle>
               <CardDescription>Manage your customers and view their details.</CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setIsImportOpen(true)}><FileUp className="mr-2 h-4 w-4"/> Import</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -351,19 +351,19 @@ export default function CustomersPage() {
                   Name {getSortIcon('name')}
                 </Button>
               </TableHead>
-              <TableHead>Mobile</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead className="hidden lg:table-cell">Mobile</TableHead>
+              <TableHead className="hidden lg:table-cell">Email</TableHead>
               <TableHead>
                 <Button variant="ghost" onClick={() => requestSort('servicePackage')} className="-ml-4">
                   Package {getSortIcon('servicePackage')}
                 </Button>
               </TableHead>
-              <TableHead>
+              <TableHead className="hidden lg:table-cell">
                 <Button variant="ghost" onClick={() => requestSort('lastRechargeDate')} className="-ml-4">
                   Renewed At {getSortIcon('lastRechargeDate')}
                 </Button>
               </TableHead>
-              <TableHead>
+              <TableHead className="hidden lg:table-cell">
                 <Button variant="ghost" onClick={() => requestSort('expiryDate')} className="-ml-4">
                   Expires At {getSortIcon('expiryDate')}
                 </Button>
@@ -384,11 +384,11 @@ export default function CustomersPage() {
                     <TableCell>
                       <Link href={`/customers/${customer.id}`} className="font-medium hover:underline">{customer.name}</Link>
                     </TableCell>
-                    <TableCell>{customer.mobile}</TableCell>
-                    <TableCell>{customer.email}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{customer.mobile}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{customer.email}</TableCell>
                     <TableCell>{customer.servicePackage}</TableCell>
-                    <TableCell>{customer.lastRechargeDate ? format(new Date(customer.lastRechargeDate), "PP") : 'N/A'}</TableCell>
-                    <TableCell>{customer.expiryDate ? format(new Date(customer.expiryDate), "PP") : 'N/A'}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{customer.lastRechargeDate ? format(new Date(customer.lastRechargeDate), "PP") : 'N/A'}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{customer.expiryDate ? format(new Date(customer.expiryDate), "PP") : 'N/A'}</TableCell>
                     <TableCell>
                         <Badge variant={packageStatus.variant} className={packageStatus.className}>
                             {packageStatus.text}

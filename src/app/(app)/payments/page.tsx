@@ -80,25 +80,25 @@ function PaymentsPageContent() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Transaction ID</TableHead>
+                  <TableHead className="hidden sm:table-cell">Transaction ID</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Payment Date</TableHead>
-                  <TableHead>Received By</TableHead>
+                  <TableHead className="hidden md:table-cell">Received By</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paymentDetails.map((payment) => (
                   <TableRow key={payment.id}>
-                    <TableCell className="font-mono text-xs">{payment.transactionId || payment.id}</TableCell>
+                    <TableCell className="font-mono text-xs hidden sm:table-cell">{payment.transactionId || payment.id}</TableCell>
                     <TableCell>
                       <div className="font-medium">{payment.customerName}</div>
                       <div className="text-sm text-muted-foreground">{payment.pppoeUsername}</div>
                     </TableCell>
                     <TableCell className="text-right">₹{payment.amount.toLocaleString('en-IN')}</TableCell>
-                    <TableCell>{format(new Date(payment.paymentDate), "PPP")}</TableCell>
-                    <TableCell>
+                    <TableCell>{format(new Date(payment.paymentDate), "PP")}</TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <Badge variant="outline">{payment.receivedBy}</Badge>
                     </TableCell>
                     <TableCell>

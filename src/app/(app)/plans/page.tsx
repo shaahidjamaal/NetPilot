@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -58,7 +59,7 @@ export default function PackagesPage() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Service Packages</h1>
               <p className="text-muted-foreground">Create, modify, and track various service packages.</p>
@@ -81,10 +82,10 @@ export default function PackagesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead className="hidden md:table-cell">Type</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead>Speed (Down/Up)</TableHead>
-                  <TableHead>Data Limit</TableHead>
+                  <TableHead className="hidden md:table-cell">Data Limit</TableHead>
                   <TableHead>
                     <span className="sr-only">Actions</span>
                   </TableHead>
@@ -94,7 +95,7 @@ export default function PackagesPage() {
                 {packages.length > 0 ? packages.map((pkg) => (
                   <TableRow key={pkg.name}>
                     <TableCell className="font-medium">{pkg.name}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <Badge variant="outline">{pkg.packageType}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -103,7 +104,7 @@ export default function PackagesPage() {
                     <TableCell>
                       {pkg.downloadSpeed} / {pkg.uploadSpeed} Mbps
                     </TableCell>
-                    <TableCell>{pkg.dataLimit}</TableCell>
+                    <TableCell className="hidden md:table-cell">{pkg.dataLimit}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

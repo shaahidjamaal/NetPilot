@@ -505,15 +505,17 @@ function SettingsPageContent() {
         <p className="text-muted-foreground">Configure your NetPilot application.</p>
       </div>
       <Tabs defaultValue={tab} className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
-          <TabsTrigger value="general"><SettingsIcon className="mr-2 h-4 w-4" />General</TabsTrigger>
-          <TabsTrigger value="billing"><Briefcase className="mr-2 h-4 w-4" />Billing Profile</TabsTrigger>
-          <TabsTrigger value="payment"><CreditCard className="mr-2 h-4 w-4" />Payment</TabsTrigger>
-          <TabsTrigger value="sms"><MessageSquare className="mr-2 h-4 w-4" />SMS</TabsTrigger>
-          <TabsTrigger value="email"><Mail className="mr-2 h-4 w-4" />Email</TabsTrigger>
-          <TabsTrigger value="nas"><Network className="mr-2 h-4 w-4" />NAS & IP Pool</TabsTrigger>
-          <TabsTrigger value="about"><Info className="mr-2 h-4 w-4" />About</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto pb-2">
+            <TabsList className="w-max">
+              <TabsTrigger value="general"><SettingsIcon className="mr-2 h-4 w-4" />General</TabsTrigger>
+              <TabsTrigger value="billing"><Briefcase className="mr-2 h-4 w-4" />Billing Profile</TabsTrigger>
+              <TabsTrigger value="payment"><CreditCard className="mr-2 h-4 w-4" />Payment</TabsTrigger>
+              <TabsTrigger value="sms"><MessageSquare className="mr-2 h-4 w-4" />SMS</TabsTrigger>
+              <TabsTrigger value="email"><Mail className="mr-2 h-4 w-4" />Email</TabsTrigger>
+              <TabsTrigger value="nas"><Network className="mr-2 h-4 w-4" />NAS & IP Pool</TabsTrigger>
+              <TabsTrigger value="about"><Info className="mr-2 h-4 w-4" />About</TabsTrigger>
+            </TabsList>
+        </div>
         <TabsContent value="general" className="mt-6">
           <GeneralSettingsTab />
         </TabsContent>

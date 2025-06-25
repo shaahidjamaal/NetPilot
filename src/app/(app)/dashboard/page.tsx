@@ -5,10 +5,11 @@ import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, ArrowUp, IndianRupee, Signal, ShoppingCart } from "lucide-react"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Bar, BarChart as RechartsBarChart, CartesianGrid, Legend, Line, LineChart as RechartsLineChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { Bar, BarChart as RechartsBarChart, CartesianGrid, Line, LineChart as RechartsLineChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { useInvoices } from "@/hooks/use-invoices"
 import { usePackages } from "@/hooks/use-packages"
 import { isAfter, startOfMonth, subMonths } from 'date-fns'
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 const revenueData = [
   { month: "Jan", revenue: 1500000 },
@@ -35,7 +36,7 @@ export default function DashboardPage() {
 
   const salesData = useMemo(() => {
     if (isLoadingInvoices || !invoices?.length || isLoadingPackages || !packages?.length) {
-      return { currentMonthTotal: 0, comparison: 0, packageSalesChartData: [] };
+      return { currentMonthTotal: 0, previousMonthTotal: 0, comparison: 0, packageSalesData: [] };
     }
 
     const now = new Date();
@@ -65,14 +66,14 @@ export default function DashboardPage() {
 
     const comparison = previousMonthTotal > 0 ? ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100 : currentMonthTotal > 0 ? 100 : 0;
     
-    const packageSalesChartData = packages.map(pkg => ({
+    const packageSalesData = packages.map(pkg => ({
         name: pkg.name,
         current: packageSalesCurrent[pkg.name] || 0,
         previous: packageSalesPrevious[pkg.name] || 0,
     })).filter(d => d.current > 0 || d.previous > 0);
 
 
-    return { currentMonthTotal, comparison, packageSalesChartData };
+    return { currentMonthTotal, previousMonthTotal, comparison, packageSalesData };
   }, [invoices, packages, isLoadingInvoices, isLoadingPackages]);
 
   return (
@@ -169,20 +170,31 @@ export default function DashboardPage() {
             <CardDescription>A comparison of sales for each package between the current and previous month.</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={{}} className="h-[350px] w-full">
-              <RechartsBarChart data={salesData.packageSalesChartData}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
-                <YAxis tickLine={false} tickMargin={10} axisLine={false} tickFormatter={(value) => `₹${(Number(value) / 1000).toFixed(0)}k`} />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Legend />
-                <Bar dataKey="previous" name="Previous Month" fill="hsl(var(--accent))" radius={4} />
-                <Bar dataKey="current" name="Current Month" fill="hsl(var(--primary))" radius={4} />
-              </RechartsBarChart>
-            </ChartContainer>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Package</TableHead>
+                  <TableHead className="text-right">Current Month</TableHead>
+                  <TableHead className="text-right">Previous Month</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {salesData.packageSalesData.map((pkg) => (
+                  <TableRow key={pkg.name}>
+                    <TableCell className="font-medium">{pkg.name}</TableCell>
+                    <TableCell className="text-right">₹{pkg.current.toLocaleString('en-IN')}</TableCell>
+                    <TableCell className="text-right">₹{pkg.previous.toLocaleString('en-IN')}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell className="font-bold">Total Sales</TableCell>
+                  <TableCell className="text-right font-bold">₹{salesData.currentMonthTotal.toLocaleString('en-IN')}</TableCell>
+                  <TableCell className="text-right font-bold">₹{salesData.previousMonthTotal.toLocaleString('en-IN')}</TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
           </CardContent>
         </Card>
       </div>

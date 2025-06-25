@@ -41,6 +41,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { useCustomers } from "@/hooks/use-customers"
@@ -49,10 +59,14 @@ import { type Customer } from "@/lib/types"
 
 export default function CustomersPage() {
   const router = useRouter()
-  const { customers, deleteCustomer, isLoading } = useCustomers()
+  const { customers, deleteCustomer, topUpCustomer, isLoading } = useCustomers()
   const { zones, isLoading: isLoadingZones } = useZones()
   const { toast } = useToast()
+  
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  const [customerToTopUp, setCustomerToTopUp] = useState<Customer | null>(null);
+  const [topUpAmount, setTopUpAmount] = useState<string>("");
+
   const [zoneFilter, setZoneFilter] = useState<string>('all');
 
 
@@ -69,6 +83,27 @@ export default function CustomersPage() {
           });
           setCustomerToDelete(null);
       }
+  };
+
+  const handleConfirmTopUp = () => {
+    if (customerToTopUp && topUpAmount) {
+        const amount = parseInt(topUpAmount, 10);
+        if (!isNaN(amount) && amount > 0) {
+            topUpCustomer(customerToTopUp.id, amount);
+            toast({
+                title: "Top-up Successful",
+                description: `${amount}GB has been added to ${customerToTopUp.name}.`,
+            });
+            setCustomerToTopUp(null);
+            setTopUpAmount("");
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Invalid Amount",
+                description: "Please enter a valid positive number for the top-up amount.",
+            });
+        }
+    }
   };
   
   const filteredCustomers = customers.filter(customer => {
@@ -147,6 +182,9 @@ export default function CustomersPage() {
                 <TableCell>
                   <div className="font-medium">{customer.servicePackage}</div>
                   <div className="text-sm text-muted-foreground">{customer.zone || 'No Zone'}</div>
+                  {customer.dataTopUp && customer.dataTopUp > 0 ? (
+                    <div className="text-sm text-accent">Top-up: {customer.dataTopUp} GB</div>
+                  ): null}
                 </TableCell>
                 <TableCell>{format(new Date(customer.joined), 'yyyy-MM-dd')}</TableCell>
                 <TableCell>
@@ -160,6 +198,7 @@ export default function CustomersPage() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem onClick={() => router.push(`/customers/edit/${customer.id}`)}>Edit</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setCustomerToTopUp(customer)}>Top-up Data</DropdownMenuItem>
                       <DropdownMenuItem>View Details</DropdownMenuItem>
                       <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(customer)}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
@@ -189,6 +228,33 @@ export default function CustomersPage() {
             </AlertDialogContent>
         </AlertDialog>
     )}
+     <Dialog open={!!customerToTopUp} onOpenChange={(isOpen) => { if(!isOpen) setCustomerToTopUp(null) }}>
+        <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Add Data Top-up for {customerToTopUp?.name}</DialogTitle>
+                <DialogDescription>
+                    Enter the amount of data to add (in GB). This will be added to their current top-up balance.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="top-up-amount" className="text-right">Amount (GB)</Label>
+                    <Input
+                        id="top-up-amount"
+                        type="number"
+                        value={topUpAmount}
+                        onChange={(e) => setTopUpAmount(e.target.value)}
+                        className="col-span-3"
+                        placeholder="e.g., 50"
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setCustomerToTopUp(null)}>Cancel</Button>
+                <Button onClick={handleConfirmTopUp}>Add Top-up</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
     </>
   )
 }

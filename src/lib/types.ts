@@ -35,6 +35,7 @@ export type Customer = {
   installationAddress: string;
   aadharNumber: string;
   zone?: string;
+  dataTopUp?: number;
 };
 
 export type Zone = {

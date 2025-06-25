@@ -5,12 +5,12 @@ import { type Customer, type CustomerType } from '@/lib/types';
 import { useState, useEffect, useCallback } from 'react';
 
 const initialCustomers: Customer[] = [
-  { id: "cus_1", name: "John Doe", email: "john.doe@example.com", mobile: "9876543210", servicePackage: "Fiber 100", status: "Active", customerType: "Home User", joined: new Date("2023-01-15").toISOString(), permanentAddress: "123 Main St, Anytown", installationAddress: "123 Main St, Anytown", aadharNumber: "123456789012", zone: "North Zone" },
-  { id: "cus_2", name: "Jane Smith", email: "jane.smith@example.com", mobile: "9876543211", servicePackage: "Basic DSL", status: "Active", customerType: "Home User", joined: new Date("2022-11-30").toISOString(), permanentAddress: "456 Oak Ave, Otherville", installationAddress: "456 Oak Ave, Otherville", aadharNumber: "123456789013", zone: "South Zone" },
-  { id: "cus_3", name: "Mike Johnson", email: "mike.j@example.com", mobile: "9876543212", servicePackage: "Fiber 500", status: "Suspended", customerType: "Business User", joined: new Date("2023-03-20").toISOString(), permanentAddress: "789 Pine Ln, Somewhere", installationAddress: "789 Pine Ln, Somewhere", aadharNumber: "123456789014", zone: "North Zone" },
-  { id: "cus_4", name: "Emily Davis", email: "emily.d@example.com", mobile: "9876543213", servicePackage: "Fiber 1000", status: "Active", customerType: "Business User", joined: new Date("2021-08-10").toISOString(), permanentAddress: "101 Maple Dr, Anyplace", installationAddress: "101 Maple Dr, Anyplace", aadharNumber: "123456789015", zone: "West End" },
-  { id: "cus_5", name: "Chris Wilson", email: "chris.w@example.com", mobile: "9876543214", servicePackage: "Basic DSL", status: "Inactive", customerType: "Wireless User", joined: new Date("2023-05-01").toISOString(), permanentAddress: "212 Birch Rd, Nowhere", installationAddress: "212 Birch Rd, Nowhere", aadharNumber: "123456789016" },
-  { id: "cus_6", name: "Sarah Brown", email: "sarah.b@example.com", mobile: "9876543215", servicePackage: "Fiber 100", status: "Active", customerType: "Home User", joined: new Date("2023-09-22").toISOString(), permanentAddress: "333 Cedar Ct, Elsewhere", installationAddress: "333 Cedar Ct, Elsewhere", aadharNumber: "123456789017", zone: "South Zone" },
+  { id: "cus_1", name: "John Doe", email: "john.doe@example.com", mobile: "9876543210", servicePackage: "Fiber 100", status: "Active", customerType: "Home User", joined: new Date("2023-01-15").toISOString(), permanentAddress: "123 Main St, Anytown", installationAddress: "123 Main St, Anytown", aadharNumber: "123456789012", zone: "North Zone", dataTopUp: 0 },
+  { id: "cus_2", name: "Jane Smith", email: "jane.smith@example.com", mobile: "9876543211", servicePackage: "Basic DSL", status: "Active", customerType: "Home User", joined: new Date("2022-11-30").toISOString(), permanentAddress: "456 Oak Ave, Otherville", installationAddress: "456 Oak Ave, Otherville", aadharNumber: "123456789013", zone: "South Zone", dataTopUp: 50 },
+  { id: "cus_3", name: "Mike Johnson", email: "mike.j@example.com", mobile: "9876543212", servicePackage: "Fiber 500", status: "Suspended", customerType: "Business User", joined: new Date("2023-03-20").toISOString(), permanentAddress: "789 Pine Ln, Somewhere", installationAddress: "789 Pine Ln, Somewhere", aadharNumber: "123456789014", zone: "North Zone", dataTopUp: 0 },
+  { id: "cus_4", name: "Emily Davis", email: "emily.d@example.com", mobile: "9876543213", servicePackage: "Fiber 1000", status: "Active", customerType: "Business User", joined: new Date("2021-08-10").toISOString(), permanentAddress: "101 Maple Dr, Anyplace", installationAddress: "101 Maple Dr, Anyplace", aadharNumber: "123456789015", zone: "West End", dataTopUp: 0 },
+  { id: "cus_5", name: "Chris Wilson", email: "chris.w@example.com", mobile: "9876543214", servicePackage: "Basic DSL", status: "Inactive", customerType: "Wireless User", joined: new Date("2023-05-01").toISOString(), permanentAddress: "212 Birch Rd, Nowhere", installationAddress: "212 Birch Rd, Nowhere", aadharNumber: "123456789016", dataTopUp: 0 },
+  { id: "cus_6", name: "Sarah Brown", email: "sarah.b@example.com", mobile: "9876543215", servicePackage: "Fiber 100", status: "Active", customerType: "Home User", joined: new Date("2023-09-22").toISOString(), permanentAddress: "333 Cedar Ct, Elsewhere", installationAddress: "333 Cedar Ct, Elsewhere", aadharNumber: "123456789017", zone: "South Zone", dataTopUp: 100 },
 ]
 
 const STORAGE_KEY = 'netpilot-customers';
@@ -50,6 +50,7 @@ export function useCustomers() {
       id: `cus_${new Date().getTime()}`,
       status: 'Active',
       joined: new Date().toISOString(),
+      dataTopUp: 0,
     };
     
     const newCustomers = [...customers, newCustomer];
@@ -70,5 +71,14 @@ export function useCustomers() {
       updateLocalStorage(newCustomers);
   }, [customers, updateLocalStorage]);
 
-  return { customers, addCustomer, getCustomerById, updateCustomer, deleteCustomer, isLoading };
+  const topUpCustomer = useCallback((id: string, amount: number) => {
+    const newCustomers = customers.map(c => 
+        c.id === id 
+        ? { ...c, dataTopUp: (c.dataTopUp || 0) + amount } 
+        : c
+    );
+    updateLocalStorage(newCustomers);
+  }, [customers, updateLocalStorage]);
+
+  return { customers, addCustomer, getCustomerById, updateCustomer, deleteCustomer, topUpCustomer, isLoading };
 }

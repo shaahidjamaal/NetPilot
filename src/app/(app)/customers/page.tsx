@@ -3,6 +3,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { MoreHorizontal, PlusCircle, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 
@@ -47,6 +48,7 @@ import { useZones } from "@/hooks/use-zones"
 import { type Customer } from "@/lib/types"
 
 export default function CustomersPage() {
+  const router = useRouter()
   const { customers, deleteCustomer, isLoading } = useCustomers()
   const { zones, isLoading: isLoadingZones } = useZones()
   const { toast } = useToast()
@@ -155,7 +157,7 @@ export default function CustomersPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push(`/customers/edit/${customer.id}`)}>Edit</DropdownMenuItem>
                       <DropdownMenuItem>View Details</DropdownMenuItem>
                       <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(customer)}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>

@@ -35,6 +35,7 @@ import {
   Package,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeToggle } from "./theme-toggle";
 
 const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -127,8 +128,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center justify-between border-b bg-card px-4 lg:px-6">
-            <SidebarTrigger className="md:hidden" />
-          <div className="flex-1" />
+            <div className="flex items-center gap-2">
+                <SidebarTrigger className="md:hidden" />
+                <ThemeToggle />
+            </div>
           <Avatar>
             <AvatarImage src="https://placehold.co/40x40" alt="@user" />
             <AvatarFallback>NP</AvatarFallback>

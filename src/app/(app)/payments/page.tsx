@@ -6,12 +6,32 @@ import { format } from "date-fns"
 import { Loader2 } from "lucide-react"
 
 import { usePayments } from "@/hooks/use-payments"
+import { useCustomers } from "@/hooks/use-customers"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 
 export default function PaymentsPage() {
-  const { payments, isLoading } = usePayments()
+  const { payments, isLoading: isLoadingPayments } = usePayments()
+  const { customers, isLoading: isLoadingCustomers } = useCustomers()
+  
+  const isLoading = isLoadingPayments || isLoadingCustomers;
+
+  const paymentDetails = React.useMemo(() => {
+    if (isLoading) return [];
+    
+    return payments.map(payment => {
+      const customer = customers.find(c => c.id === payment.customerId);
+      const receivedBy = ['Online Gateway'].includes(payment.method) ? 'Online Payment' : 'Admin';
+      
+      return {
+        ...payment,
+        pppoeUsername: customer?.pppoeUsername || 'N/A',
+        receivedBy: receivedBy
+      }
+    })
+  }, [payments, customers, isLoading]);
+
 
   const getStatusBadgeVariant = (status: 'Completed' | 'Pending' | 'Failed') => {
     switch (status) {
@@ -33,7 +53,7 @@ export default function PaymentsPage() {
     <Card>
       <CardHeader>
         <CardTitle>Payments History</CardTitle>
-        <CardDescription>A log of all successful and pending payments.</CardDescription>
+        <CardDescription>A log of all payments made by customers.</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -44,23 +64,26 @@ export default function PaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Invoice ID</TableHead>
+                <TableHead>Customer ID</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Method</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Payment Date</TableHead>
+                <TableHead>Received By</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payments.map((payment) => (
+              {paymentDetails.map((payment) => (
                 <TableRow key={payment.id}>
-                  <TableCell className="font-mono text-xs">{payment.invoiceId}</TableCell>
-                  <TableCell className="font-medium">{payment.customerName}</TableCell>
-                  <TableCell>₹{payment.amount.toLocaleString('en-IN')}</TableCell>
+                  <TableCell className="font-mono text-xs">{payment.customerId}</TableCell>
+                  <TableCell>
+                    <div className="font-medium">{payment.customerName}</div>
+                    <div className="text-sm text-muted-foreground">{payment.pppoeUsername}</div>
+                  </TableCell>
+                  <TableCell className="text-right">₹{payment.amount.toLocaleString('en-IN')}</TableCell>
                   <TableCell>{format(new Date(payment.paymentDate), "PPP")}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{payment.method}</Badge>
+                    <Badge variant="outline">{payment.receivedBy}</Badge>
                   </TableCell>
                   <TableCell>
                     <Badge 
@@ -75,7 +98,7 @@ export default function PaymentsPage() {
             </TableBody>
           </Table>
         )}
-        {!isLoading && payments.length === 0 && (
+        {!isLoading && paymentDetails.length === 0 && (
           <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg mt-4">
             No payments have been recorded yet.
           </div>

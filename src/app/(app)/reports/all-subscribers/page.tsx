@@ -1,8 +1,10 @@
 
 "use client"
 
+import * as React from 'react';
 import * as XLSX from 'xlsx';
 import { useCustomers } from "@/hooks/use-customers"
+import { useInvoices } from "@/hooks/use-invoices"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -18,29 +20,51 @@ import {
 import { format } from 'date-fns'
 
 export default function AllSubscribersReportPage() {
-  const { customers, isLoading } = useCustomers()
+  const { customers, isLoading: isLoadingCustomers } = useCustomers();
+  const { invoices, isLoading: isLoadingInvoices } = useInvoices();
+  const isLoading = isLoadingCustomers || isLoadingInvoices;
+
+  const customerSalesData = React.useMemo(() => {
+    if (isLoading) return {};
+
+    const sales: { [customerId: string]: { totalSpent: number; invoiceCount: number } } = {};
+
+    invoices.forEach(invoice => {
+      if (!sales[invoice.customerId]) {
+        sales[invoice.customerId] = { totalSpent: 0, invoiceCount: 0 };
+      }
+      sales[invoice.customerId].totalSpent += invoice.amount;
+      sales[invoice.customerId].invoiceCount += 1;
+    });
+
+    return sales;
+  }, [invoices, isLoading]);
+
+  const totalRevenue = React.useMemo(() => {
+    if (isLoading) return 0;
+    return Object.values(customerSalesData).reduce((sum, current) => sum + current.totalSpent, 0);
+  }, [customerSalesData, isLoading]);
+
 
   const handleExportCsv = () => {
     if (!customers || customers.length === 0) return;
 
-    // Define headers to match the Customer type
     const headers = [
       "ID", "Name", "Email", "Mobile", "Customer Type", "GST Number", "Service Package", "Status", 
-      "Joined Date", "Permanent Address", "Installation Address", "Aadhar Number", "Zone"
+      "Joined Date", "Permanent Address", "Installation Address", "Aadhar Number", "Zone",
+      "Total Spent", "Invoice Count"
     ];
 
-    // Function to safely format a cell for CSV
-    const formatCsvCell = (cellData: string | undefined | null) => {
+    const formatCsvCell = (cellData: string | number | undefined | null) => {
       const stringData = String(cellData ?? '');
-      // If the data contains a comma, double quote, or newline, wrap it in double quotes.
       if (stringData.includes(',') || stringData.includes('"') || stringData.includes('\n')) {
-        // Escape existing double quotes by doubling them
         return `"${stringData.replace(/"/g, '""')}"`;
       }
       return stringData;
     };
 
     const csvRows = customers.map(customer => {
+      const sales = customerSalesData[customer.id] || { totalSpent: 0, invoiceCount: 0 };
       const row = [
         customer.id,
         customer.name,
@@ -54,7 +78,9 @@ export default function AllSubscribersReportPage() {
         customer.permanentAddress,
         customer.installationAddress,
         customer.aadharNumber,
-        customer.zone
+        customer.zone,
+        sales.totalSpent,
+        sales.invoiceCount
       ];
       return row.map(formatCsvCell).join(',');
     });
@@ -66,7 +92,7 @@ export default function AllSubscribersReportPage() {
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
     const today = new Date().toISOString().split('T')[0];
-    link.setAttribute("download", `all-subscribers-report-${today}.csv`);
+    link.setAttribute("download", `subscriber-sales-report-${today}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -76,29 +102,34 @@ export default function AllSubscribersReportPage() {
 
   const handleExportXlsx = () => {
     if (!customers || customers.length === 0) return;
-
-    const dataToExport = customers.map(customer => ({
-      'ID': customer.id,
-      'Name': customer.name,
-      'Email': customer.email,
-      'Mobile': customer.mobile,
-      'Customer Type': customer.customerType,
-      'GST Number': customer.gstNumber || '',
-      'Service Package': customer.servicePackage,
-      'Status': customer.status,
-      'Joined Date': format(new Date(customer.joined), 'yyyy-MM-dd'),
-      'Permanent Address': customer.permanentAddress,
-      'Installation Address': customer.installationAddress,
-      'Aadhar Number': customer.aadharNumber,
-      'Zone': customer.zone,
-    }));
+    
+    const dataToExport = customers.map(customer => {
+      const sales = customerSalesData[customer.id] || { totalSpent: 0, invoiceCount: 0 };
+      return {
+        'ID': customer.id,
+        'Name': customer.name,
+        'Email': customer.email,
+        'Mobile': customer.mobile,
+        'Customer Type': customer.customerType,
+        'GST Number': customer.gstNumber || '',
+        'Current Package': customer.servicePackage,
+        'Status': customer.status,
+        'Joined Date': format(new Date(customer.joined), 'yyyy-MM-dd'),
+        'Total Spent': sales.totalSpent,
+        'Invoice Count': sales.invoiceCount,
+        'Permanent Address': customer.permanentAddress,
+        'Installation Address': customer.installationAddress,
+        'Aadhar Number': customer.aadharNumber,
+        'Zone': customer.zone,
+      };
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Subscribers");
     
     const today = new Date().toISOString().split('T')[0];
-    XLSX.writeFile(workbook, `all-subscribers-report-${today}.xlsx`);
+    XLSX.writeFile(workbook, `subscriber-sales-report-${today}.xlsx`);
   };
 
   return (
@@ -113,8 +144,8 @@ export default function AllSubscribersReportPage() {
                 </Link>
               </Button>
               <div>
-                <CardTitle>All Subscribers Report</CardTitle>
-                <CardDescription>A complete list of all subscribers in the system.</CardDescription>
+                <CardTitle>Subscriber Sales Report</CardTitle>
+                <CardDescription>A report on sales revenue and invoice counts for each subscriber.</CardDescription>
               </div>
             </div>
             <DropdownMenu>
@@ -139,44 +170,55 @@ export default function AllSubscribersReportPage() {
             </div>
           ) : (
             <>
-            <Card className="mb-6">
-                <CardContent className="p-4">
-                    <div className="text-2xl font-bold">{customers.length}</div>
-                    <p className="text-xs text-muted-foreground">Total Subscribers</p>
-                </CardContent>
-            </Card>
+            <div className="grid gap-6 md:grid-cols-2 mb-6">
+              <Card>
+                  <CardContent className="p-4">
+                      <div className="text-2xl font-bold">{customers.length}</div>
+                      <p className="text-xs text-muted-foreground">Total Subscribers</p>
+                  </CardContent>
+              </Card>
+              <Card>
+                  <CardContent className="p-4">
+                      <div className="text-2xl font-bold">₹{totalRevenue.toLocaleString('en-IN')}</div>
+                      <p className="text-xs text-muted-foreground">Total Revenue from All Subscribers</p>
+                  </CardContent>
+              </Card>
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Customer</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Current Package</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Service Package</TableHead>
+                  <TableHead className="text-right">Total Spent</TableHead>
+                  <TableHead className="text-right">Invoices</TableHead>
                   <TableHead>Joined Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {customers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell className="font-medium">{customer.name}</TableCell>
-                    <TableCell>
-                      <div className="text-sm">{customer.email}</div>
-                      <div className="text-sm text-muted-foreground">{customer.mobile}</div>
-                    </TableCell>
-                    <TableCell>{customer.customerType}</TableCell>
-                    <TableCell>
-                      <Badge variant={customer.status === 'Active' ? 'default' : customer.status === 'Suspended' ? 'destructive' : 'secondary'}
-                        className={`${customer.status === 'Active' ? 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' : ''}
-                        ${customer.status === 'Suspended' ? 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400' : ''}
-                        ${customer.status === 'Inactive' ? 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400' : ''}`}>
-                        {customer.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{customer.servicePackage}</TableCell>
-                    <TableCell>{format(new Date(customer.joined), 'yyyy-MM-dd')}</TableCell>
-                  </TableRow>
-                ))}
+                {customers.map((customer) => {
+                  const sales = customerSalesData[customer.id] || { totalSpent: 0, invoiceCount: 0 };
+                  return (
+                    <TableRow key={customer.id}>
+                      <TableCell>
+                        <div className="font-medium">{customer.name}</div>
+                        <div className="text-sm text-muted-foreground">{customer.email}</div>
+                      </TableCell>
+                      <TableCell>{customer.servicePackage}</TableCell>
+                      <TableCell>
+                        <Badge variant={customer.status === 'Active' ? 'default' : customer.status === 'Suspended' ? 'destructive' : 'secondary'}
+                          className={`${customer.status === 'Active' ? 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' : ''}
+                          ${customer.status === 'Suspended' ? 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400' : ''}
+                          ${customer.status === 'Inactive' ? 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400' : ''}`}>
+                          {customer.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-mono">₹{sales.totalSpent.toLocaleString('en-IN')}</TableCell>
+                      <TableCell className="text-right">{sales.invoiceCount}</TableCell>
+                      <TableCell>{format(new Date(customer.joined), 'yyyy-MM-dd')}</TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
             </>

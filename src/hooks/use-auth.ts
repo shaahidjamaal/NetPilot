@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
@@ -18,7 +19,7 @@ const AUTH_STORAGE_KEY = 'netpilot-auth-user';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthCheckLoading, setIsAuthCheckLoading] = useState(true);
   const { users, isLoading: isLoadingUsers } = useUsers();
   const router = useRouter();
 
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Failed to parse auth user from localStorage", error);
       window.localStorage.removeItem(AUTH_STORAGE_KEY);
     } finally {
-      setIsLoading(false);
+      setIsAuthCheckLoading(false);
     }
   }, []);
 
@@ -66,6 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }, [router]);
 
+  const isLoading = isAuthCheckLoading || isLoadingUsers;
+
   const value = { user, login, logout, isLoading };
 
   // We don't render anything until the initial auth check is complete.
@@ -73,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return React.createElement(
     AuthContext.Provider,
     { value: value },
-    !isLoading ? children : null
+    !isAuthCheckLoading ? children : null
   );
 }
 

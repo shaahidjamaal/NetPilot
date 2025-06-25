@@ -33,9 +33,9 @@ const loginSchema = z.object({
 })
 
 export default function LoginPage() {
-  const { login } = useAuth()
+  const { login, isLoading: isAuthLoading } = useAuth()
   const { toast } = useToast()
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -46,7 +46,7 @@ export default function LoginPage() {
   })
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
-    setIsLoading(true)
+    setIsSubmitting(true)
     const success = await login(values.email, values.password)
     if (!success) {
       toast({
@@ -55,7 +55,7 @@ export default function LoginPage() {
         description: "Invalid email or password, or account is disabled.",
       })
     }
-    setIsLoading(false)
+    setIsSubmitting(false)
   }
 
   return (
@@ -98,8 +98,8 @@ export default function LoginPage() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="submit" className="w-full" disabled={isSubmitting || isAuthLoading}>
+              {(isSubmitting || isAuthLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
           </form>

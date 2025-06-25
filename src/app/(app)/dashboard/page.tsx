@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useMemo } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, ArrowUp, IndianRupee, Signal, ShoppingCart } from "lucide-react"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -42,9 +42,11 @@ export default function DashboardPage() {
   const { invoices, isLoading: isLoadingInvoices } = useInvoices()
   const { packages, isLoading: isLoadingPackages } = usePackages()
 
-  const salesData = useMemo(() => {
+  const [salesData, setSalesData] = useState({ currentMonthTotal: 0, previousMonthTotal: 0, comparison: 0, packageSalesData: [] as any[] });
+
+  useEffect(() => {
     if (isLoadingInvoices || !invoices?.length || isLoadingPackages || !packages?.length) {
-      return { currentMonthTotal: 0, previousMonthTotal: 0, comparison: 0, packageSalesData: [] };
+      return;
     }
 
     const now = new Date();
@@ -80,8 +82,7 @@ export default function DashboardPage() {
         previous: packageSalesPrevious[pkg.name] || 0,
     })).filter(d => d.current > 0 || d.previous > 0);
 
-
-    return { currentMonthTotal, previousMonthTotal, comparison, packageSalesData };
+    setSalesData({ currentMonthTotal, previousMonthTotal, comparison, packageSalesData });
   }, [invoices, packages, isLoadingInvoices, isLoadingPackages]);
 
   return (

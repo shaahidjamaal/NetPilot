@@ -20,10 +20,14 @@ export default function PackageSalesPage() {
   const { invoices, isLoading: isLoadingInvoices } = useInvoices()
   const { packages, isLoading: isLoadingPackages } = usePackages()
 
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: addDays(new Date(), -30),
-    to: new Date(),
-  })
+  const [date, setDate] = React.useState<DateRange | undefined>()
+
+  React.useEffect(() => {
+    setDate({
+      from: addDays(new Date(), -30),
+      to: new Date(),
+    })
+  }, [])
 
   const salesData = React.useMemo(() => {
     if (isLoadingInvoices || isLoadingPackages) return { packageSales: [], totalRevenue: 0, totalUnits: 0 }

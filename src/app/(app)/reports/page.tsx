@@ -53,7 +53,7 @@ const reportItems = [
     title: "Package Sales",
     description: "View sales reports for service packages.",
     icon: <ShoppingCart className="h-8 w-8 text-primary" />,
-    href: "/reports/package-sales",
+    href: "/package-sales",
   },
   {
     title: "Tickets",

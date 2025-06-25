@@ -42,6 +42,7 @@ const newCustomerSchema = z.object({
   mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Please enter a valid email address."),
   customerType: z.enum(["Home User", "Business User", "Wireless User"], { required_error: "Please select a customer type." }),
+  gstNumber: z.string().optional(),
   servicePackage: z.string({ required_error: "Please select a service package." }),
   zone: z.string().optional(),
   permanentAddress: z.string().min(10, "Address must be at least 10 characters."),
@@ -55,6 +56,14 @@ const newCustomerSchema = z.object({
       (files) => ["image/jpeg", "image/png", "application/pdf"].includes(files?.[0]?.type),
       ".jpg, .jpeg, .png and .pdf files are accepted."
     ),
+}).refine(data => {
+    if (data.customerType === 'Business User') {
+        return !!data.gstNumber && /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(data.gstNumber);
+    }
+    return true;
+}, {
+    message: "A valid GST number is required for Business users",
+    path: ["gstNumber"],
 }).refine(data => {
     if (data.sameAsPermanent) {
         return true
@@ -80,6 +89,7 @@ export default function AddCustomerPage() {
       mobile: "",
       email: "",
       customerType: undefined,
+      gstNumber: "",
       servicePackage: undefined,
       zone: undefined,
       permanentAddress: "",
@@ -91,6 +101,7 @@ export default function AddCustomerPage() {
   
   const sameAsPermanent = form.watch("sameAsPermanent");
   const permanentAddress = form.watch("permanentAddress");
+  const customerType = form.watch("customerType");
 
   React.useEffect(() => {
     if (sameAsPermanent && permanentAddress) {
@@ -192,6 +203,23 @@ export default function AddCustomerPage() {
                   )}
                 />
             </div>
+             {customerType === 'Business User' && (
+              <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="gstNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>GST Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 29AAAAA0000A1Z5" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
             <div className="grid md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}

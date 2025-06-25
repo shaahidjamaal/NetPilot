@@ -38,6 +38,7 @@ export type Customer = {
   dataTopUp?: number;
   lastRechargeDate?: string; // Should be ISO date string
   expiryDate?: string; // Should be ISO date string
+  gstNumber?: string;
 };
 
 export type Zone = {

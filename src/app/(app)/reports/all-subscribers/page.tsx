@@ -25,12 +25,12 @@ export default function AllSubscribersReportPage() {
 
     // Define headers to match the Customer type
     const headers = [
-      "ID", "Name", "Email", "Mobile", "Customer Type", "Service Package", "Status", 
+      "ID", "Name", "Email", "Mobile", "Customer Type", "GST Number", "Service Package", "Status", 
       "Joined Date", "Permanent Address", "Installation Address", "Aadhar Number", "Zone"
     ];
 
     // Function to safely format a cell for CSV
-    const formatCsvCell = (cellData: string) => {
+    const formatCsvCell = (cellData: string | undefined | null) => {
       const stringData = String(cellData ?? '');
       // If the data contains a comma, double quote, or newline, wrap it in double quotes.
       if (stringData.includes(',') || stringData.includes('"') || stringData.includes('\n')) {
@@ -47,6 +47,7 @@ export default function AllSubscribersReportPage() {
         customer.email,
         customer.mobile,
         customer.customerType,
+        customer.gstNumber,
         customer.servicePackage,
         customer.status,
         format(new Date(customer.joined), 'yyyy-MM-dd'),
@@ -82,6 +83,7 @@ export default function AllSubscribersReportPage() {
       'Email': customer.email,
       'Mobile': customer.mobile,
       'Customer Type': customer.customerType,
+      'GST Number': customer.gstNumber || '',
       'Service Package': customer.servicePackage,
       'Status': customer.status,
       'Joined Date': format(new Date(customer.joined), 'yyyy-MM-dd'),

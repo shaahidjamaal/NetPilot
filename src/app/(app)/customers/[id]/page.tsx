@@ -121,7 +121,7 @@ export default function CustomerDetailPage() {
                                         {customer.status}
                                     </Badge>
                                 </CardTitle>
-                                <CardDescription>ID: {customer.id}</CardDescription>
+                                <CardDescription>Account No: {customer.id}</CardDescription>
                             </div>
                         </div>
                         <Button asChild>
@@ -151,6 +151,9 @@ export default function CustomerDetailPage() {
                             <DetailItem label="Email Address" value={customer.email} />
                             <DetailItem label="Mobile Number" value={customer.mobile} />
                             <DetailItem label="Customer Type" value={customer.customerType} />
+                            {customer.customerType === 'Business User' && (
+                                <DetailItem label="GST Number" value={customer.gstNumber} />
+                            )}
                             <DetailItem label="Zone" value={customer.zone} />
                             <DetailItem label="Joined On" value={format(new Date(customer.joined), "PPP")} />
                             <DetailItem label="Permanent Address" value={<p className="whitespace-pre-wrap">{customer.permanentAddress}</p>} />

@@ -33,6 +33,7 @@ import {
   Boxes,
   MapPin,
   Package,
+  Shield,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "./theme-toggle";
@@ -55,6 +56,7 @@ const navItems = [
 ];
 
 const bottomNavItems = [
+    { href: "/admin", icon: Shield, label: "Admin" },
     { href: "/settings", icon: Settings, label: "Settings" },
 ];
 

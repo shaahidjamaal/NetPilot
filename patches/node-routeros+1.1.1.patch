@@ -1,0 +1,19 @@
+diff --git a/node_modules/node-routeros/dist/index.js b/node_modules/node-routeros/dist/index.js
+index 9e4f5a3..5e59265 100644
+--- a/node_modules/node-routeros/dist/index.js
++++ b/node_modules/node-routeros/dist/index.js
+@@ -3,11 +3,7 @@
+     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+ }
+ Object.defineProperty(exports, "__esModule", { value: true });
+-if (process.env.ENV === 'testing') {
+-    const sourceMapSupport = require('source-map-support');
+-    sourceMapSupport.install();
+-}
++// if (process.env.ENV === 'testing') {
++//     const sourceMapSupport = require('source-map-support');
++//     sourceMapSupport.install();
++// }
+ __export(require("./RouterOSAPI"));
+ __export(require("./RouterOSClient"));
+ __export(require("./RouterOSResponse"));

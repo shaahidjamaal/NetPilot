@@ -24,6 +24,8 @@ const nextConfig: NextConfig = {
         config.resolve.fallback = {};
       }
       config.resolve.fallback['source-map-support'] = false;
+      config.resolve.fallback['net'] = false;
+      config.resolve.fallback['tls'] = false;
     }
     return config;
   },

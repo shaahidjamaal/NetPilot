@@ -4,8 +4,6 @@
 import { type Customer, type CustomerType } from '@/lib/types';
 import { useState, useEffect, useCallback } from 'react';
 import { addDays } from 'date-fns';
-import { useSettings } from './use-settings';
-import { generateSuffix } from '@/lib/id-generation';
 
 const initialCustomers: Customer[] = [
   { id: "cus_1", name: "John Doe", email: "john.doe@example.com", mobile: "9876543210", servicePackage: "Fiber 100", status: "Active", customerType: "Home User", joined: new Date("2023-01-15").toISOString(), permanentAddress: "123 Main St, Anytown", installationAddress: "123 Main St, Anytown", aadharNumber: "123456789012", zone: "North Zone", dataTopUp: 0, lastRechargeDate: new Date("2024-07-01").toISOString(), expiryDate: addDays(new Date("2024-07-01"), 30).toISOString(), pppoeUsername: "john.doe", pppoePassword: "password123", discount: 10 },
@@ -18,10 +16,11 @@ const initialCustomers: Customer[] = [
 
 const STORAGE_KEY = 'netpilot-customers';
 
+export type AddCustomerInput = Omit<Customer, 'status' | 'joined' | 'dataTopUp' | 'lastRechargeDate' | 'expiryDate'>;
+
 export function useCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { settings } = useSettings();
 
   useEffect(() => {
     try {
@@ -48,11 +47,9 @@ export function useCustomers() {
     }
   }, []);
 
-  const addCustomer = useCallback((customerData: Omit<Customer, 'id' | 'status' | 'joined'>) => {
-    const suffix = generateSuffix(settings.customerIdSuffix);
+  const addCustomer = useCallback((customerData: AddCustomerInput) => {
     const newCustomer: Customer = {
       ...customerData,
-      id: `${settings.customerIdPrefix}${suffix}`,
       status: 'Active',
       joined: new Date().toISOString(),
       dataTopUp: 0,
@@ -62,7 +59,7 @@ export function useCustomers() {
     
     const newCustomers = [...customers, newCustomer];
     updateLocalStorage(newCustomers);
-  }, [customers, updateLocalStorage, settings]);
+  }, [customers, updateLocalStorage]);
   
   const getCustomerById = useCallback((id: string) => {
     return customers.find(c => c.id === id);

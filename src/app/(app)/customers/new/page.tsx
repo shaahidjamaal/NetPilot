@@ -39,6 +39,7 @@ import { useZones } from "@/hooks/use-zones"
 import { Separator } from "@/components/ui/separator"
 
 const newCustomerSchema = z.object({
+  id: z.string().min(1, "Customer ID is required."),
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Please enter a valid email address."),
@@ -90,6 +91,7 @@ export default function AddCustomerPage() {
   const form = useForm<z.infer<typeof newCustomerSchema>>({
     resolver: zodResolver(newCustomerSchema),
     defaultValues: {
+      id: "",
       name: "",
       mobile: "",
       email: "",
@@ -150,6 +152,19 @@ export default function AddCustomerPage() {
                 <h3 className="text-lg font-medium">Personal Details</h3>
                 <div className="grid md:grid-cols-2 gap-6">
                     <FormField
+                      control={form.control}
+                      name="id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Customer ID</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., CUST001" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
@@ -157,19 +172,6 @@ export default function AddCustomerPage() {
                         <FormLabel>Full Name</FormLabel>
                         <FormControl>
                             <Input placeholder="John Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl>
-                            <Input placeholder="name@example.com" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -192,6 +194,21 @@ export default function AddCustomerPage() {
                     />
                     <FormField
                     control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Email Address</FormLabel>
+                        <FormControl>
+                            <Input placeholder="name@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                    control={form.control}
                     name="customerType"
                     render={({ field }) => (
                         <FormItem>
@@ -212,24 +229,22 @@ export default function AddCustomerPage() {
                         </FormItem>
                     )}
                     />
-                </div>
-                {customerType === 'Business User' && (
-                <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                    control={form.control}
-                    name="gstNumber"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>GST Number</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., 29AAAAA0000A1Z5" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
+                     {customerType === 'Business User' && (
+                        <FormField
+                        control={form.control}
+                        name="gstNumber"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>GST Number</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g., 29AAAAA0000A1Z5" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                     )}
-                    />
                 </div>
-                )}
             </div>
             
             <Separator/>
@@ -407,9 +422,9 @@ export default function AddCustomerPage() {
                             />
                         </FormControl>
                         <div className="space-y-1 leading-none">
-                            <FormLabel>
+                          <FormLabel>
                             Installation address is the same as permanent address.
-                            </FormLabel>
+                          </FormLabel>
                         </div>
                         </FormItem>
                     )}

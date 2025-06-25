@@ -4,7 +4,7 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MoreHorizontal, PlusCircle, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+import { MoreHorizontal, PlusCircle, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Search } from "lucide-react"
 import { format, isBefore } from "date-fns"
 
 import { Badge } from "@/components/ui/badge"
@@ -69,6 +69,7 @@ export default function CustomersPage() {
   const [customerToTopUp, setCustomerToTopUp] = useState<Customer | null>(null);
   const [topUpAmount, setTopUpAmount] = useState<string>("");
 
+  const [searchQuery, setSearchQuery] = useState("");
   const [zoneFilter, setZoneFilter] = useState<string>('all');
   const [sortConfig, setSortConfig] = useState<{ key: SortableColumn; direction: 'ascending' | 'descending' } | null>({ key: 'id', direction: 'ascending' });
 
@@ -109,10 +110,26 @@ export default function CustomersPage() {
     }
   };
   
-  const filteredCustomers = customers.filter(customer => {
-    if (zoneFilter === 'all') return true;
-    return customer.zone === zoneFilter;
-  });
+  const filteredCustomers = useMemo(() => {
+    return customers.filter(customer => {
+        const searchLower = searchQuery.toLowerCase();
+        
+        const inZone = zoneFilter === 'all' || customer.zone === zoneFilter;
+
+        if (!inZone) return false;
+
+        if (searchQuery.trim() === '') return true;
+
+        return (
+            customer.name.toLowerCase().includes(searchLower) ||
+            customer.id.toLowerCase().includes(searchLower) ||
+            (customer.pppoeUsername || '').toLowerCase().includes(searchLower) ||
+            customer.email.toLowerCase().includes(searchLower) ||
+            customer.mobile.includes(searchLower)
+        );
+    });
+  }, [customers, searchQuery, zoneFilter]);
+
 
   const requestSort = (key: SortableColumn) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -181,30 +198,40 @@ export default function CustomersPage() {
     <>
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-            <div>
-                <CardTitle>Customers</CardTitle>
-                <CardDescription>Manage your customers and view their details.</CardDescription>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+              <CardTitle>Customers</CardTitle>
+              <CardDescription>Manage your customers and view their details.</CardDescription>
+          </div>
+          <Link href="/customers/new" passHref>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Customer
+              </Button>
+          </Link>
+        </div>
+        <div className="mt-4 flex flex-col sm:flex-row items-center gap-2">
+            <div className="relative w-full flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search by name, ID, username, email or mobile..."
+                    className="w-full rounded-lg bg-background pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
-            <div className="flex items-center gap-2">
-                 <Select value={zoneFilter} onValueChange={setZoneFilter} disabled={isLoadingZones}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by zone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Zones</SelectItem>
-                        {zones.map(zone => (
-                            <SelectItem key={zone.id} value={zone.name}>{zone.name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                 <Link href="/customers/new" passHref>
-                    <Button>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Add Customer
-                    </Button>
-                </Link>
-            </div>
+            <Select value={zoneFilter} onValueChange={setZoneFilter} disabled={isLoadingZones}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by zone" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Zones</SelectItem>
+                    {zones.map(zone => (
+                        <SelectItem key={zone.id} value={zone.name}>{zone.name}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
         </div>
       </CardHeader>
       <CardContent>
@@ -340,3 +367,5 @@ export default function CustomersPage() {
     </>
   )
 }
+
+    

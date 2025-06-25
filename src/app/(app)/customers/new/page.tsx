@@ -37,8 +37,6 @@ import { useCustomers } from "@/hooks/use-customers"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useZones } from "@/hooks/use-zones"
 import { Separator } from "@/components/ui/separator"
-import { useSettings } from "@/hooks/use-settings"
-import { generateSuffix } from "@/lib/id-generation"
 
 const newCustomerSchema = z.object({
   id: z.string().min(1, "Customer ID is required."),
@@ -87,14 +85,13 @@ export default function AddCustomerPage() {
   const { toast } = useToast()
   const { packages, isLoading: isLoadingPackages } = usePackages()
   const { zones, isLoading: isLoadingZones } = useZones()
-  const { addCustomer } = useCustomers()
+  const { customers, addCustomer, isLoading: isLoadingCustomers } = useCustomers()
   const [showPassword, setShowPassword] = React.useState(false);
-  const { settings, isLoading: isLoadingSettings } = useSettings()
   
   const form = useForm<z.infer<typeof newCustomerSchema>>({
     resolver: zodResolver(newCustomerSchema),
     defaultValues: {
-      id: "",
+      id: "Generating...",
       name: "",
       mobile: "",
       email: "",
@@ -113,11 +110,39 @@ export default function AddCustomerPage() {
   })
   
   React.useEffect(() => {
-    if (!isLoadingSettings && settings) {
-      const suffix = generateSuffix(settings.customerIdSuffix);
-      form.setValue('id', `${settings.customerIdPrefix}${suffix}`);
+    if (isLoadingCustomers) {
+        form.setValue('id', 'Generating...');
+        return;
     }
-  }, [settings, isLoadingSettings, form]);
+
+    let nextId = 'CUS-1'; // Default for the very first customer
+
+    if (customers && customers.length > 0) {
+        const numericIds = customers.map(c => {
+            const match = c.id.match(/^(.*?)(\d+)$/);
+            if (match) {
+                return {
+                    prefix: match[1],
+                    number: parseInt(match[2], 10)
+                };
+            }
+            return null;
+        }).filter((item): item is { prefix: string; number: number } => item !== null);
+
+        if (numericIds.length > 0) {
+            const maxNumber = Math.max(...numericIds.map(item => item.number));
+            const lastCustomer = numericIds.find(item => item.number === maxNumber);
+            
+            if (lastCustomer) {
+                nextId = `${lastCustomer.prefix}${lastCustomer.number + 1}`;
+            }
+        }
+    }
+    
+    form.setValue('id', nextId);
+
+}, [customers, isLoadingCustomers, form]);
+
 
   const sameAsPermanent = form.watch("sameAsPermanent");
   const permanentAddress = form.watch("permanentAddress");

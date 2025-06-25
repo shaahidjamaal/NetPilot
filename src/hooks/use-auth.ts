@@ -13,14 +13,14 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = 'netpilot-auth-user';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthCheckLoading, setIsAuthCheckLoading] = useState(true);
-  const { users, isLoading: isLoadingUsers } = useUsers();
+  const { login: loginUser, isLoading: isLoadingUsers } = useUsers();
   const router = useRouter();
 
   useEffect(() => {
@@ -39,27 +39,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password?: string): Promise<boolean> => {
-    // In a real app, this would be an API call to a secure backend.
-    // For this prototype, we check against the users in our local storage hook.
-    if (isLoadingUsers) return false; // Can't log in while users are loading
-
-    const foundUser = users.find(u => u.email === email);
-
-    // Simple password check for prototype. Real apps MUST NOT do this on the client.
-    if (foundUser && foundUser.enabled && foundUser.password === password) {
-      const userToStore = { ...foundUser };
-      // It's good practice not to store the password in the auth context/storage
-      // even in a prototype.
-      delete userToStore.password;
-
-      setUser(userToStore);
-      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userToStore));
+    const loggedInUser = await loginUser(email, password);
+    
+    if (loggedInUser) {
+      setUser(loggedInUser);
+      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(loggedInUser));
       router.push('/dashboard');
       return true;
     }
     
     return false;
-  }, [users, router, isLoadingUsers]);
+  }, [loginUser, router]);
 
   const logout = useCallback(() => {
     setUser(null);
@@ -82,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === null) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

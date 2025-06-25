@@ -61,6 +61,17 @@ export function useUsers() {
       updateLocalStorage(newUsers);
   }, [users, updateLocalStorage]);
 
+  const login = useCallback(async (email: string, password?: string): Promise<User | null> => {
+    const foundUser = users.find(u => u.email === email);
 
-  return { users, addUser, updateUser, deleteUser, isLoading };
+    if (foundUser && foundUser.enabled && foundUser.password === password) {
+      const { password: _, ...userToReturn } = foundUser;
+      return userToReturn as User;
+    }
+    
+    return null;
+  }, [users]);
+
+
+  return { users, login, addUser, updateUser, deleteUser, isLoading };
 }

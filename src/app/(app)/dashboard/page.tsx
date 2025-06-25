@@ -145,6 +145,41 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
+            <CardTitle>Package-wise Sales</CardTitle>
+            <CardDescription>Sales this month vs. last month.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Package</TableHead>
+                  <TableHead className="text-right">Current</TableHead>
+                  <TableHead className="text-right">Previous</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {salesData.packageSalesData.map((pkg) => (
+                  <TableRow key={pkg.name}>
+                    <TableCell className="font-medium">{pkg.name}</TableCell>
+                    <TableCell className="text-right">₹{pkg.current.toLocaleString('en-IN')}</TableCell>
+                    <TableCell className="text-right">₹{pkg.previous.toLocaleString('en-IN')}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell className="font-bold">Total</TableCell>
+                  <TableCell className="text-right font-bold">₹{salesData.currentMonthTotal.toLocaleString('en-IN')}</TableCell>
+                  <TableCell className="text-right font-bold">₹{salesData.previousMonthTotal.toLocaleString('en-IN')}</TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+      <div className="grid gap-8">
+        <Card>
+          <CardHeader>
             <CardTitle>Data Usage Trends</CardTitle>
           </CardHeader>
           <CardContent>
@@ -160,41 +195,6 @@ export default function DashboardPage() {
                 <Line type="monotone" dataKey="usage" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} />
               </RechartsLineChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="grid gap-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Package-wise Sales</CardTitle>
-            <CardDescription>A comparison of sales for each package between the current and previous month.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Package</TableHead>
-                  <TableHead className="text-right">Current Month</TableHead>
-                  <TableHead className="text-right">Previous Month</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {salesData.packageSalesData.map((pkg) => (
-                  <TableRow key={pkg.name}>
-                    <TableCell className="font-medium">{pkg.name}</TableCell>
-                    <TableCell className="text-right">₹{pkg.current.toLocaleString('en-IN')}</TableCell>
-                    <TableCell className="text-right">₹{pkg.previous.toLocaleString('en-IN')}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell className="font-bold">Total Sales</TableCell>
-                  <TableCell className="text-right font-bold">₹{salesData.currentMonthTotal.toLocaleString('en-IN')}</TableCell>
-                  <TableCell className="text-right font-bold">₹{salesData.previousMonthTotal.toLocaleString('en-IN')}</TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
           </CardContent>
         </Card>
       </div>

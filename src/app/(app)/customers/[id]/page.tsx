@@ -24,7 +24,7 @@ function DetailItem({ label, value }: { label: string, value: React.ReactNode })
     return (
         <div className="flex flex-col gap-1">
             <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="font-medium">{value || "-"}</p>
+            <div className="font-medium">{value || "-"}</div>
         </div>
     )
 }

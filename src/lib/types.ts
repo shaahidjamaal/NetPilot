@@ -36,6 +36,8 @@ export type Customer = {
   aadharNumber: string;
   zone?: string;
   dataTopUp?: number;
+  lastRechargeDate?: string; // Should be ISO date string
+  expiryDate?: string; // Should be ISO date string
 };
 
 export type Zone = {

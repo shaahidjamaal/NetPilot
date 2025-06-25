@@ -167,7 +167,7 @@ export default function CustomersPage() {
             {filteredCustomers.map((customer) => (
                 <TableRow key={customer.id}>
                 <TableCell>
-                  <div className="font-medium">{customer.name}</div>
+                  <Link href={`/customers/${customer.id}`} className="font-medium hover:underline">{customer.name}</Link>
                   <div className="text-sm text-muted-foreground">{customer.email}</div>
                 </TableCell>
                 <TableCell>{customer.customerType}</TableCell>
@@ -199,7 +199,6 @@ export default function CustomersPage() {
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem onClick={() => router.push(`/customers/edit/${customer.id}`)}>Edit</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setCustomerToTopUp(customer)}>Top-up Data</DropdownMenuItem>
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
                       <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(customer)}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

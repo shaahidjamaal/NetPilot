@@ -106,10 +106,16 @@ export default function DashboardPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{salesData.currentMonthTotal.toLocaleString('en-IN')}</div>
-            <p className="text-xs text-muted-foreground">
-              vs. ₹{salesData.previousMonthTotal.toLocaleString('en-IN')} last month
-            </p>
+            <div className="space-y-1">
+                <div className="flex items-baseline justify-between">
+                    <span className="text-sm text-muted-foreground">Current Month</span>
+                    <span className="text-lg font-bold">₹{salesData.currentMonthTotal.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex items-baseline justify-between">
+                    <span className="text-sm text-muted-foreground">Previous Month</span>
+                    <span className="text-lg font-bold">₹{salesData.previousMonthTotal.toLocaleString('en-IN')}</span>
+                </div>
+            </div>
           </CardContent>
         </Card>
         <Card>

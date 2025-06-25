@@ -119,6 +119,7 @@ export default function CustomersPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Customer</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Service Info</TableHead>
               <TableHead>Joined Date</TableHead>
@@ -134,6 +135,7 @@ export default function CustomersPage() {
                   <div className="font-medium">{customer.name}</div>
                   <div className="text-sm text-muted-foreground">{customer.email}</div>
                 </TableCell>
+                <TableCell>{customer.customerType}</TableCell>
                 <TableCell>
                   <Badge variant={customer.status === 'Active' ? 'default' : customer.status === 'Suspended' ? 'destructive' : 'secondary'}
                    className={`${customer.status === 'Active' ? 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' : ''}

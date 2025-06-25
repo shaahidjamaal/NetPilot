@@ -17,6 +17,7 @@ export type Package = {
 }
 
 export type CustomerStatus = "Active" | "Suspended" | "Inactive";
+export type CustomerType = "Home User" | "Business User" | "Wireless User";
 
 export type Customer = {
   id: string;
@@ -25,6 +26,7 @@ export type Customer = {
   email: string;
   servicePackage: string;
   status: CustomerStatus;
+  customerType: CustomerType;
   joined: string; // Should be ISO date string
   permanentAddress: string;
   installationAddress: string;

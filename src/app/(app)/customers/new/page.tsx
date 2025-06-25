@@ -41,6 +41,7 @@ const newCustomerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Please enter a valid email address."),
+  customerType: z.enum(["Home User", "Business User", "Wireless User"], { required_error: "Please select a customer type." }),
   servicePackage: z.string({ required_error: "Please select a service package." }),
   zone: z.string().optional(),
   permanentAddress: z.string().min(10, "Address must be at least 10 characters."),
@@ -78,6 +79,7 @@ export default function AddCustomerPage() {
       name: "",
       mobile: "",
       email: "",
+      customerType: undefined,
       servicePackage: undefined,
       zone: undefined,
       permanentAddress: "",
@@ -167,6 +169,30 @@ export default function AddCustomerPage() {
                     </FormItem>
                   )}
                 />
+                 <FormField
+                  control={form.control}
+                  name="customerType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Customer Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a customer type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Home User">Home User</SelectItem>
+                          <SelectItem value="Business User">Business User</SelectItem>
+                          <SelectItem value="Wireless User">Wireless User</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="servicePackage"
@@ -193,8 +219,6 @@ export default function AddCustomerPage() {
                     </FormItem>
                   )}
                 />
-            </div>
-            <div className="grid md:grid-cols-1 gap-6">
                  <FormField
                   control={form.control}
                   name="zone"

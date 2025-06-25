@@ -25,8 +25,8 @@ export default function AllSubscribersReportPage() {
 
     // Define headers to match the Customer type
     const headers = [
-      "ID", "Name", "Email", "Mobile", "Service Package", "Status", 
-      "Joined Date", "Permanent Address", "Installation Address", "Aadhar Number"
+      "ID", "Name", "Email", "Mobile", "Customer Type", "Service Package", "Status", 
+      "Joined Date", "Permanent Address", "Installation Address", "Aadhar Number", "Zone"
     ];
 
     // Function to safely format a cell for CSV
@@ -46,12 +46,14 @@ export default function AllSubscribersReportPage() {
         customer.name,
         customer.email,
         customer.mobile,
+        customer.customerType,
         customer.servicePackage,
         customer.status,
         format(new Date(customer.joined), 'yyyy-MM-dd'),
         customer.permanentAddress,
         customer.installationAddress,
         customer.aadharNumber,
+        customer.zone
       ];
       return row.map(formatCsvCell).join(',');
     });
@@ -79,12 +81,14 @@ export default function AllSubscribersReportPage() {
       'Name': customer.name,
       'Email': customer.email,
       'Mobile': customer.mobile,
+      'Customer Type': customer.customerType,
       'Service Package': customer.servicePackage,
       'Status': customer.status,
       'Joined Date': format(new Date(customer.joined), 'yyyy-MM-dd'),
       'Permanent Address': customer.permanentAddress,
       'Installation Address': customer.installationAddress,
       'Aadhar Number': customer.aadharNumber,
+      'Zone': customer.zone,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -144,6 +148,7 @@ export default function AllSubscribersReportPage() {
                 <TableRow>
                   <TableHead>Customer</TableHead>
                   <TableHead>Contact</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Service Package</TableHead>
                   <TableHead>Joined Date</TableHead>
@@ -157,6 +162,7 @@ export default function AllSubscribersReportPage() {
                       <div className="text-sm">{customer.email}</div>
                       <div className="text-sm text-muted-foreground">{customer.mobile}</div>
                     </TableCell>
+                    <TableCell>{customer.customerType}</TableCell>
                     <TableCell>
                       <Badge variant={customer.status === 'Active' ? 'default' : customer.status === 'Suspended' ? 'destructive' : 'secondary'}
                         className={`${customer.status === 'Active' ? 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' : ''}

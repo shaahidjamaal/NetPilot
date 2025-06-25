@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { format } from 'date-fns'
+import { format, isValid } from 'date-fns'
 
 export default function AllSubscribersReportPage() {
   const { customers, isLoading: isLoadingCustomers } = useCustomers();
@@ -65,6 +65,7 @@ export default function AllSubscribersReportPage() {
 
     const csvRows = customers.map(customer => {
       const sales = customerSalesData[customer.id] || { totalSpent: 0, invoiceCount: 0 };
+      const joinedDate = customer.joined && isValid(new Date(customer.joined)) ? format(new Date(customer.joined), 'yyyy-MM-dd') : '';
       const row = [
         customer.id,
         customer.name,
@@ -74,7 +75,7 @@ export default function AllSubscribersReportPage() {
         customer.gstNumber,
         customer.servicePackage,
         customer.status,
-        format(new Date(customer.joined), 'yyyy-MM-dd'),
+        joinedDate,
         customer.permanentAddress,
         customer.installationAddress,
         customer.aadharNumber,
@@ -114,7 +115,7 @@ export default function AllSubscribersReportPage() {
         'GST Number': customer.gstNumber || '',
         'Current Package': customer.servicePackage,
         'Status': customer.status,
-        'Joined Date': format(new Date(customer.joined), 'yyyy-MM-dd'),
+        'Joined Date': customer.joined && isValid(new Date(customer.joined)) ? format(new Date(customer.joined), 'yyyy-MM-dd') : '',
         'Total Spent': sales.totalSpent,
         'Invoice Count': sales.invoiceCount,
         'Permanent Address': customer.permanentAddress,
@@ -206,7 +207,8 @@ export default function AllSubscribersReportPage() {
                       </TableCell>
                       <TableCell>{customer.servicePackage}</TableCell>
                       <TableCell>
-                        <Badge variant={customer.status === 'Active' ? 'default' : customer.status === 'Suspended' ? 'destructive' : 'secondary'}
+                        <Badge 
+                          variant={customer.status === 'Active' ? 'default' : customer.status === 'Suspended' ? 'secondary' : 'destructive'}
                           className={`${customer.status === 'Active' ? 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' : ''}
                           ${customer.status === 'Suspended' ? 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400' : ''}
                           ${customer.status === 'Inactive' ? 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400' : ''}`}>
@@ -215,7 +217,7 @@ export default function AllSubscribersReportPage() {
                       </TableCell>
                       <TableCell className="text-right font-mono">₹{sales.totalSpent.toLocaleString('en-IN')}</TableCell>
                       <TableCell className="text-right">{sales.invoiceCount}</TableCell>
-                      <TableCell>{format(new Date(customer.joined), 'yyyy-MM-dd')}</TableCell>
+                      <TableCell>{customer.joined && isValid(new Date(customer.joined)) ? format(new Date(customer.joined), 'yyyy-MM-dd') : 'N/A'}</TableCell>
                     </TableRow>
                   )
                 })}

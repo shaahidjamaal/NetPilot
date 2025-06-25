@@ -6,22 +6,69 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { ArrowLeft, Printer, Loader2 } from "lucide-react"
+import { ArrowLeft, Download, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { format } from 'date-fns'
 
 export default function AllSubscribersReportPage() {
   const { customers, isLoading } = useCustomers()
 
-  const handlePrint = () => {
-    window.print()
-  }
+  const handleExport = () => {
+    if (!customers || customers.length === 0) return;
+
+    // Define headers to match the Customer type
+    const headers = [
+      "ID", "Name", "Email", "Mobile", "Service Package", "Status", 
+      "Joined Date", "Permanent Address", "Installation Address", "Aadhar Number"
+    ];
+
+    // Function to safely format a cell for CSV
+    const formatCsvCell = (cellData: string) => {
+      const stringData = String(cellData ?? '');
+      // If the data contains a comma, double quote, or newline, wrap it in double quotes.
+      if (stringData.includes(',') || stringData.includes('"') || stringData.includes('\n')) {
+        // Escape existing double quotes by doubling them
+        return `"${stringData.replace(/"/g, '""')}"`;
+      }
+      return stringData;
+    };
+
+    const csvRows = customers.map(customer => {
+      const row = [
+        customer.id,
+        customer.name,
+        customer.email,
+        customer.mobile,
+        customer.servicePackage,
+        customer.status,
+        format(new Date(customer.joined), 'yyyy-MM-dd'),
+        customer.permanentAddress,
+        customer.installationAddress,
+        customer.aadharNumber,
+      ];
+      return row.map(formatCsvCell).join(',');
+    });
+
+    const csvContent = [headers.join(','), ...csvRows].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    const today = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `all-subscribers-report-${today}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <div className="print:p-0">
-      <Card className="print:shadow-none print:border-none">
+    <div>
+      <Card>
         <CardHeader>
-          <div className="flex items-center justify-between print:hidden">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button variant="outline" size="icon" asChild>
                 <Link href="/reports">
@@ -33,15 +80,11 @@ export default function AllSubscribersReportPage() {
                 <CardDescription>A complete list of all subscribers in the system.</CardDescription>
               </div>
             </div>
-            <Button onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" />
-              Print Report
+            <Button onClick={handleExport} disabled={isLoading || customers.length === 0}>
+              <Download className="mr-2 h-4 w-4" />
+              Export to CSV
             </Button>
           </div>
-           <div className="hidden print:block text-center mb-4">
-                <h1 className="text-2xl font-bold">All Subscribers Report</h1>
-                <p className="text-sm text-muted-foreground">Generated on: {new Date().toLocaleDateString()}</p>
-            </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -50,7 +93,7 @@ export default function AllSubscribersReportPage() {
             </div>
           ) : (
             <>
-            <Card className="mb-6 print:border print:shadow-sm">
+            <Card className="mb-6">
                 <CardContent className="p-4">
                     <div className="text-2xl font-bold">{customers.length}</div>
                     <p className="text-xs text-muted-foreground">Total Subscribers</p>

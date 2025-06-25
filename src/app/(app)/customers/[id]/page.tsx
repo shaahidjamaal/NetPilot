@@ -8,12 +8,14 @@ import { useCustomers } from "@/hooks/use-customers"
 import { usePackages } from "@/hooks/use-packages"
 import { useToast } from "@/hooks/use-toast"
 import { type Customer } from "@/lib/types"
+import { useInvoices } from "@/hooks/use-invoices"
+import { usePayments } from "@/hooks/use-payments"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Edit, Loader2, User, Wifi, FileText, History, Repeat, Replace, PlusCircle, CalendarOff, CircleSlash } from "lucide-react"
-import { format } from "date-fns"
+import { format, addDays } from "date-fns"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -33,8 +35,10 @@ export default function CustomerDetailPage() {
     const router = useRouter()
     const params = useParams()
     const { toast } = useToast()
-    const { getCustomerById, customers, isLoading: isLoadingCustomers, topUpCustomer, terminateCustomer } = useCustomers()
+    const { getCustomerById, customers, isLoading: isLoadingCustomers, topUpCustomer, terminateCustomer, updateCustomer } = useCustomers()
     const { packages } = usePackages()
+    const { addInvoice, markAsPaid } = useInvoices()
+    const { addPayment } = usePayments()
 
     const id = params.id as string
     const [customer, setCustomer] = React.useState<Customer | undefined>(undefined)
@@ -57,6 +61,54 @@ export default function CustomerDetailPage() {
             }
         }
     }, [isLoadingCustomers, id, getCustomerById, router, toast, customers])
+    
+    const currentPackage = packages.find(p => p.name === customer?.servicePackage);
+
+    const handleRenewPackage = () => {
+        if (!customer || !currentPackage) {
+            toast({ variant: "destructive", title: "Error", description: "Customer or package information is missing." });
+            return;
+        }
+
+        // 1. Create a new invoice
+        const newInvoice = addInvoice({
+            customerId: customer.id,
+            packageName: currentPackage.name,
+        });
+        
+        if (newInvoice) {
+            // 2. Mark as paid
+            markAsPaid(newInvoice.id);
+
+            // 3. Create payment record
+            addPayment({
+                invoiceId: newInvoice.id,
+                customerId: customer.id,
+                customerName: customer.name,
+                amount: newInvoice.amount,
+                method: "Admin Renewal",
+                status: "Completed",
+                transactionId: `renew-${new Date().getTime()}`,
+            });
+
+            // 4. Update customer dates and status
+            const today = new Date();
+            updateCustomer(customer.id, {
+                lastRechargeDate: today.toISOString(),
+                expiryDate: addDays(today, currentPackage.validity || 30).toISOString(),
+                status: 'Active'
+            });
+
+            // 5. Toast
+            toast({
+                title: "Package Renewed",
+                description: `${customer.name}'s package has been renewed successfully.`,
+            });
+        } else {
+             toast({ variant: "destructive", title: "Error", description: "Failed to create an invoice for renewal." });
+        }
+    }
+
 
     const handleConfirmTopUp = () => {
         if (customer && topUpAmount) {
@@ -98,7 +150,6 @@ export default function CustomerDetailPage() {
         )
     }
 
-    const currentPackage = packages.find(p => p.name === customer.servicePackage);
 
     return (
         <div className="flex flex-col gap-6">
@@ -188,7 +239,7 @@ export default function CustomerDetailPage() {
                                      <CardTitle>Actions</CardTitle>
                                  </CardHeader>
                                  <CardContent className="flex flex-col gap-3">
-                                     <Button><Repeat className="mr-2 h-4 w-4" />Renew Package</Button>
+                                     <Button onClick={handleRenewPackage}><Repeat className="mr-2 h-4 w-4" />Renew Package</Button>
                                      <Button variant="secondary"><Replace className="mr-2 h-4 w-4" />Change Package</Button>
                                      <Button variant="secondary" onClick={() => setIsTopUpOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Top-up Data</Button>
                                      <Button variant="secondary"><CalendarOff className="mr-2 h-4 w-4" />Change Expiry</Button>

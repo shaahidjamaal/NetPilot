@@ -10,6 +10,7 @@ import { format } from "date-fns"
 import { useRouter } from "next/navigation"
 
 import { useInvoices, type AddInvoiceInput } from "@/hooks/use-invoices"
+import { usePayments } from "@/hooks/use-payments"
 import { useToast } from "@/hooks/use-toast"
 import { type Customer } from "@/lib/types"
 import { type Package } from "@/lib/types"
@@ -196,15 +197,34 @@ function CreateInvoiceDialog({ onFormSubmit, customers, packages, isLoading }: {
 
 export default function BillingPage() {
   const { invoices, addInvoice, markAsPaid, deleteInvoice, isLoading, customers, packages } = useInvoices()
+  const { addPayment } = usePayments()
   const { toast } = useToast()
   const [invoiceToDelete, setInvoiceToDelete] = React.useState<string | null>(null)
   const router = useRouter()
 
   const handleMarkAsPaid = (invoiceId: string) => {
+    // Find the invoice first to get its details for the payment record
+    const invoice = invoices.find(inv => inv.id === invoiceId)
+    
+    // Mark invoice as paid
     markAsPaid(invoiceId)
+    
+    // Create a corresponding payment record
+    if (invoice) {
+        addPayment({
+            invoiceId: invoice.id,
+            customerId: invoice.customerId,
+            customerName: invoice.customerName,
+            amount: invoice.amount,
+            method: 'Admin-Recorded',
+            status: 'Completed',
+            transactionId: `adm-${new Date().getTime()}`
+        })
+    }
+
     toast({
         title: "Invoice Updated",
-        description: "The invoice has been marked as paid.",
+        description: "The invoice has been marked as paid and a payment record created.",
     })
   }
 

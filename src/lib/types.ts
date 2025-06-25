@@ -1,6 +1,7 @@
 
 
 
+
 export const allPermissions = [
   "manage_users",
   "manage_roles",
@@ -90,7 +91,6 @@ export type Zone = {
 export type User = {
   id: string;
   email: string;
-  password?: string;
   userType: 'Admin Staff' | 'Office Staff';
   designation: string;
   roleId: string;
@@ -122,4 +122,19 @@ export type InventoryItem = {
   category: InventoryCategory;
   stock: number;
   status: "In Stock" | "Low Stock" | "Out of Stock";
+};
+
+export type PaymentStatus = "Completed" | "Pending" | "Failed";
+export type PaymentMethod = "Online Gateway" | "Admin Renewal" | "Cash" | "Bank Transfer" | "Admin-Recorded";
+
+export type Payment = {
+  id: string;
+  invoiceId: string;
+  customerId: string;
+  customerName: string;
+  amount: number;
+  paymentDate: string; // ISO Date String
+  method: PaymentMethod;
+  status: PaymentStatus;
+  transactionId?: string;
 };

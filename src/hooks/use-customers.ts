@@ -1,3 +1,4 @@
+
 'use client'
 
 import { type Customer, type CustomerType } from '@/lib/types';
@@ -15,7 +16,26 @@ const initialCustomers: Customer[] = [
 
 const STORAGE_KEY = 'netpilot-customers';
 
-export type AddCustomerInput = Omit<Customer, 'status' | 'joined' | 'dataTopUp' | 'lastRechargeDate' | 'expiryDate'>;
+export type AddCustomerInput = Omit<Customer, 'id' | 'status' | 'joined' | 'dataTopUp' | 'lastRechargeDate' | 'expiryDate'>;
+
+export const generateNextCustomerId = (customers: Customer[]): string => {
+    const prefix = 'CUS-';
+    if (!customers || customers.length === 0) {
+        return `${prefix}1`;
+    }
+
+    const maxId = customers.reduce((max, customer) => {
+        const match = customer.id.match(/^CUS-(\d+)$/);
+        if (match) {
+            const num = parseInt(match[1], 10);
+            return Math.max(max, num);
+        }
+        return max;
+    }, 0);
+
+    return `${prefix}${maxId + 1}`;
+};
+
 
 export function useCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -46,9 +66,11 @@ export function useCustomers() {
     }
   }, []);
 
-  const addCustomer = useCallback((customerData: AddCustomerInput) => {
+  const addCustomer = useCallback((customerData: Omit<AddCustomerInput, 'id'>) => {
+    const newId = generateNextCustomerId(customers);
     const newCustomer: Customer = {
       ...customerData,
+      id: newId,
       status: 'Active',
       joined: new Date().toISOString(),
       dataTopUp: 0,
@@ -60,18 +82,24 @@ export function useCustomers() {
     updateLocalStorage(newCustomers);
   }, [customers, updateLocalStorage]);
 
-  const addMultipleCustomers = useCallback((customersData: AddCustomerInput[]) => {
-    const newCustomersList: Customer[] = customersData.map(customerData => ({
-        ...customerData,
-        status: 'Active',
-        joined: new Date().toISOString(),
-        dataTopUp: 0,
-        lastRechargeDate: new Date().toISOString(),
-        expiryDate: addDays(new Date(), 30).toISOString()
-    }));
-    
-    const newCustomers = [...customers, ...newCustomersList];
-    updateLocalStorage(newCustomers);
+  const addMultipleCustomers = useCallback((customersData: Omit<AddCustomerInput, 'id'>[]) => {
+      let currentCustomers = [...customers];
+      const newCustomersList: Customer[] = customersData.map(customerData => {
+          const newId = generateNextCustomerId(currentCustomers);
+          const newCustomer: Customer = {
+              ...customerData,
+              id: newId,
+              status: 'Active',
+              joined: new Date().toISOString(),
+              dataTopUp: 0,
+              lastRechargeDate: new Date().toISOString(),
+              expiryDate: addDays(new Date(), 30).toISOString()
+          };
+          currentCustomers.push(newCustomer);
+          return newCustomer;
+      });
+      
+      updateLocalStorage(currentCustomers);
   }, [customers, updateLocalStorage]);
   
   const getCustomerById = useCallback((id: string) => {
@@ -107,5 +135,5 @@ export function useCustomers() {
   }, [customers, updateLocalStorage]);
 
 
-  return { customers, addCustomer, addMultipleCustomers, getCustomerById, updateCustomer, deleteCustomer, topUpCustomer, terminateCustomer, isLoading };
+  return { customers, addCustomer, addMultipleCustomers, getCustomerById, updateCustomer, deleteCustomer, topUpCustomer, terminateCustomer, isLoading, generateNextCustomerId };
 }

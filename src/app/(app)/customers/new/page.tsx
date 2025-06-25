@@ -39,7 +39,6 @@ import { useZones } from "@/hooks/use-zones"
 import { Separator } from "@/components/ui/separator"
 
 const newCustomerSchema = z.object({
-  id: z.string().min(1, "Customer ID is required."),
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Please enter a valid email address."),
@@ -88,13 +87,19 @@ export default function AddCustomerPage() {
   const { toast } = useToast()
   const { packages, isLoading: isLoadingPackages } = usePackages()
   const { zones, isLoading: isLoadingZones } = useZones()
-  const { customers, addCustomer, isLoading: isLoadingCustomers } = useCustomers()
+  const { customers, addCustomer, isLoading: isLoadingCustomers, generateNextCustomerId } = useCustomers()
   const [showPassword, setShowPassword] = React.useState(false);
+  const [generatedId, setGeneratedId] = React.useState("Generating...");
   
+  React.useEffect(() => {
+    if (!isLoadingCustomers) {
+        setGeneratedId(generateNextCustomerId(customers));
+    }
+  }, [isLoadingCustomers, customers, generateNextCustomerId]);
+
   const form = useForm<z.infer<typeof newCustomerSchema>>({
     resolver: zodResolver(newCustomerSchema),
     defaultValues: {
-      id: "Generating...",
       name: "",
       mobile: "",
       email: "",
@@ -111,41 +116,6 @@ export default function AddCustomerPage() {
       aadharNumber: "",
     },
   })
-  
-  React.useEffect(() => {
-    if (isLoadingCustomers) {
-        form.setValue('id', 'Generating...');
-        return;
-    }
-
-    let nextId = 'CUS-1'; // Default for the very first customer
-
-    if (customers && customers.length > 0) {
-        const numericIds = customers.map(c => {
-            const match = c.id.match(/^(.*?)(\d+)$/);
-            if (match) {
-                return {
-                    prefix: match[1],
-                    number: parseInt(match[2], 10)
-                };
-            }
-            return null;
-        }).filter((item): item is { prefix: string; number: number } => item !== null);
-
-        if (numericIds.length > 0) {
-            const maxNumber = Math.max(...numericIds.map(item => item.number));
-            const lastCustomer = numericIds.find(item => item.number === maxNumber);
-            
-            if (lastCustomer) {
-                nextId = `${lastCustomer.prefix}${lastCustomer.number + 1}`;
-            }
-        }
-    }
-    
-    form.setValue('id', nextId);
-
-}, [customers, isLoadingCustomers, form]);
-
 
   const sameAsPermanent = form.watch("sameAsPermanent");
   const permanentAddress = form.watch("permanentAddress");
@@ -158,7 +128,7 @@ export default function AddCustomerPage() {
   }, [sameAsPermanent, permanentAddress, form]);
 
 
-  function onSubmit(values: z.infer<typeof newCustomerSchema>) {
+  function onSubmit(values: Omit<z.infer<typeof newCustomerSchema>, 'id'>) {
     const { aadharUpload, sameAsPermanent, ...customerData } = values;
     addCustomer(customerData);
     toast({
@@ -189,20 +159,13 @@ export default function AddCustomerPage() {
             <div className="space-y-4">
                 <h3 className="text-lg font-medium">Personal Details</h3>
                 <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Customer ID</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Generating ID..." {...field} />
-                          </FormControl>
-                          <FormDescription>This ID is pre-generated but can be edited.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <FormItem>
+                        <FormLabel>Customer ID</FormLabel>
+                        <FormControl>
+                            <Input value={generatedId} readOnly disabled />
+                        </FormControl>
+                        <FormDescription>This ID is auto-generated.</FormDescription>
+                    </FormItem>
                     <FormField
                     control={form.control}
                     name="name"

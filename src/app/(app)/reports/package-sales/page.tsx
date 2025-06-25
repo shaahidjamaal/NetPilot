@@ -1,28 +1,6 @@
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { redirect } from 'next/navigation';
 
-export default function PackageSalesReportPage() {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" asChild>
-                <Link href="/reports">
-                    <ArrowLeft className="h-4 w-4" />
-                </Link>
-            </Button>
-            <div>
-              <CardTitle>Package Sales Report</CardTitle>
-              <CardDescription>View sales reports for service packages.</CardDescription>
-            </div>
-        </div>
-      </CardHeader>
-       <CardContent>
-        <p>Report content goes here.</p>
-      </CardContent>
-    </Card>
-  )
+export default function ReportRedirectPage() {
+  redirect('/dashboard');
 }

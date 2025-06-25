@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { PlusCircle, MoreHorizontal, Loader2 } from "lucide-react"
@@ -193,7 +193,7 @@ function UserManagementTab() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {users.map((user) => {
+                        {users.length > 0 ? users.map((user) => {
                             const role = getRoleById(user.roleId);
                             return (
                             <TableRow key={user.id}>
@@ -216,7 +216,13 @@ function UserManagementTab() {
                                     </DropdownMenu>
                                 </TableCell>
                             </TableRow>
-                        )})}
+                        )}) : (
+                            <TableRow>
+                                <TableCell colSpan={5} className="h-24 text-center">
+                                    No users found.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             )}
@@ -345,7 +351,7 @@ function RoleManagementTab() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {roles.map((role) => (
+                        {roles.length > 0 ? roles.map((role) => (
                             <TableRow key={role.id}>
                                 <TableCell className="font-medium">{role.name}</TableCell>
                                 <TableCell className="text-muted-foreground">{role.description}</TableCell>
@@ -366,7 +372,13 @@ function RoleManagementTab() {
                                     </DropdownMenu>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )) : (
+                             <TableRow>
+                                <TableCell colSpan={4} className="h-24 text-center">
+                                    No roles found.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             )}

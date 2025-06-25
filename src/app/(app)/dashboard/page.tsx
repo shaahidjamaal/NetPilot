@@ -3,11 +3,12 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, ArrowUp, IndianRupee, Signal, ShoppingCart } from "lucide-react"
+import { Users, ArrowUp, IndianRupee, ShoppingCart, Signal } from "lucide-react"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Bar, BarChart as RechartsBarChart, CartesianGrid, Cell, Line, LineChart as RechartsLineChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { useInvoices } from "@/hooks/use-invoices"
 import { usePackages } from "@/hooks/use-packages"
+import { useCustomers } from "@/hooks/use-customers"
 import { isAfter, startOfMonth, subMonths } from 'date-fns'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
@@ -41,8 +42,10 @@ const chartColors = [
 export default function DashboardPage() {
   const { invoices, isLoading: isLoadingInvoices } = useInvoices()
   const { packages, isLoading: isLoadingPackages } = usePackages()
-
-  const [salesData, setSalesData] = useState({ currentMonthTotal: 0, previousMonthTotal: 0, comparison: 0, packageSalesData: [] as any[] });
+  const { customers, isLoading: isLoadingCustomers } = useCustomers()
+  
+  const [salesData, setSalesData] = useState({ currentMonthTotal: 0, previousMonthTotal: 0, packageSalesData: [] as any[] });
+  const [customerStats, setCustomerStats] = useState({ active: 0, newThisMonth: 0 });
 
   useEffect(() => {
     if (isLoadingInvoices || !invoices?.length || isLoadingPackages || !packages?.length) {
@@ -57,7 +60,6 @@ export default function DashboardPage() {
     let previousMonthTotal = 0;
 
     const packageSalesCurrent = packages.reduce((acc, pkg) => ({...acc, [pkg.name]: 0}), {} as { [key: string]: number });
-    const packageSalesPrevious = packages.reduce((acc, pkg) => ({...acc, [pkg.name]: 0}), {} as { [key: string]: number });
 
     invoices.forEach(invoice => {
         const invoiceDate = new Date(invoice.generatedDate);
@@ -68,22 +70,28 @@ export default function DashboardPage() {
             }
         } else if (isAfter(invoiceDate, startOfPreviousMonth)) {
             previousMonthTotal += invoice.amount;
-            if (packageSalesPrevious[invoice.packageName] !== undefined) {
-                packageSalesPrevious[invoice.packageName] += invoice.amount;
-            }
         }
     });
-
-    const comparison = previousMonthTotal > 0 ? ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100 : currentMonthTotal > 0 ? 100 : 0;
     
     const packageSalesData = packages.map(pkg => ({
         name: pkg.name,
         current: packageSalesCurrent[pkg.name] || 0,
-        previous: packageSalesPrevious[pkg.name] || 0,
-    })).filter(d => d.current > 0 || d.previous > 0);
+    })).filter(d => d.current > 0).sort((a,b) => b.current - a.current);
 
-    setSalesData({ currentMonthTotal, previousMonthTotal, comparison, packageSalesData });
+    setSalesData({ currentMonthTotal, previousMonthTotal, packageSalesData });
   }, [invoices, packages, isLoadingInvoices, isLoadingPackages]);
+
+  useEffect(() => {
+      if (isLoadingCustomers || !customers?.length) return;
+      
+      const now = new Date();
+      const startOfCurrentMonth = startOfMonth(now);
+
+      const active = customers.filter(c => c.status === 'Active').length;
+      const newThisMonth = customers.filter(c => isAfter(new Date(c.joined), startOfCurrentMonth)).length;
+
+      setCustomerStats({ active, newThisMonth });
+  }, [customers, isLoadingCustomers]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -105,26 +113,18 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+1,234</div>
-            <p className="text-xs text-muted-foreground">+52 from last month</p>
+            <div className="text-2xl font-bold">{customerStats.active}</div>
+            <p className="text-xs text-muted-foreground">Total active subscribers</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Package Sales</CardTitle>
+            <CardTitle className="text-sm font-medium">Package Sales (This Month)</CardTitle>
             <ShoppingCart className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-1">
-                <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-muted-foreground">Current Month</span>
-                    <span className="text-lg font-bold">₹{salesData.currentMonthTotal.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-muted-foreground">Previous Month</span>
-                    <span className="text-lg font-bold">₹{salesData.previousMonthTotal.toLocaleString('en-IN')}</span>
-                </div>
-            </div>
+            <div className="text-2xl font-bold">₹{salesData.currentMonthTotal.toLocaleString('en-IN')}</div>
+            <p className="text-xs text-muted-foreground">vs ₹{salesData.previousMonthTotal.toLocaleString('en-IN')} last month</p>
           </CardContent>
         </Card>
         <Card>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
             <ArrowUp className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+78</div>
+            <div className="text-2xl font-bold">+{customerStats.newThisMonth}</div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
@@ -164,16 +164,15 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Package-wise Sales</CardTitle>
-            <CardDescription>Sales this month vs. last month.</CardDescription>
+            <CardTitle>Package-wise Sales (This Month)</CardTitle>
+            <CardDescription>Top performing packages by revenue.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Package</TableHead>
-                  <TableHead className="text-right">Current</TableHead>
-                  <TableHead className="text-right">Previous</TableHead>
+                  <TableHead className="text-right">Revenue</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -181,7 +180,6 @@ export default function DashboardPage() {
                   <TableRow key={pkg.name}>
                     <TableCell className="font-medium">{pkg.name}</TableCell>
                     <TableCell className="text-right">₹{pkg.current.toLocaleString('en-IN')}</TableCell>
-                    <TableCell className="text-right">₹{pkg.previous.toLocaleString('en-IN')}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -189,7 +187,6 @@ export default function DashboardPage() {
                 <TableRow>
                   <TableCell className="font-bold">Total</TableCell>
                   <TableCell className="text-right font-bold">₹{salesData.currentMonthTotal.toLocaleString('en-IN')}</TableCell>
-                  <TableCell className="text-right font-bold">₹{salesData.previousMonthTotal.toLocaleString('en-IN')}</TableCell>
                 </TableRow>
               </TableFooter>
             </Table>
@@ -200,6 +197,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Data Usage Trends</CardTitle>
+            <CardDescription>Mock data showing network usage over the week.</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={{}} className="h-[300px] w-full">

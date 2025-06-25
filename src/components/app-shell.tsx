@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -25,15 +26,14 @@ import {
   Settings,
   Wifi,
   FileClock,
-  BarChart2,
   FileCode,
   Ticket,
   UserPlus,
-  ShoppingCart,
   Boxes,
   MapPin,
   Package,
   Shield,
+  Lightbulb,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "./theme-toggle";
@@ -41,19 +41,21 @@ import { ThemeToggle } from "./theme-toggle";
 const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/customers", icon: Users, label: "Customers" },
-    { href: "/online-subscribers", icon: Wifi, label: "Online Subscribers" },
-    { href: "/access-request-log", icon: FileClock, label: "Access Request Log" },
-    { href: "/reports", icon: BarChart2, label: "Reports" },
-    { href: "/nat-logs", icon: FileCode, label: "NAT Logs" },
-    { href: "/tickets", icon: Ticket, label: "Tickets" },
-    { href: "/leads", icon: UserPlus, label: "Leads" },
-    { href: "/package-sales", icon: ShoppingCart, label: "Package Sales" },
+    { href: "/plans", icon: Package, label: "Packages" },
     { href: "/billing", icon: FileText, label: "Invoices" },
     { href: "/payments", icon: CreditCard, label: "Payments" },
     { href: "/inventory", icon: Boxes, label: "Inventory" },
     { href: "/zones", icon: MapPin, label: "Zones" },
-    { href: "/plans", icon: Package, label: "Packages" },
+    { href: "/online-subscribers", icon: Wifi, label: "Online Subscribers" },
+    { href: "/recommendations", icon: Lightbulb, label: "AI Recommendations"},
+    { href: "/tickets", icon: Ticket, label: "Tickets" },
+    { href: "/leads", icon: UserPlus, label: "Leads" },
 ];
+
+const systemNavItems = [
+    { href: "/access-request-log", icon: FileClock, label: "Access Request Log" },
+    { href: "/nat-logs", icon: FileCode, label: "NAT Logs" },
+]
 
 const bottomNavItems = [
     { href: "/admin", icon: Shield, label: "Admin" },
@@ -87,7 +89,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href}
+                  isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
+                  tooltip={{
+                    children: item.label,
+                  }}
+                >
+                  <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+            <SidebarMenuItem>
+                <div className="h-4" />
+            </SidebarMenuItem>
+            {systemNavItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith(item.href)}
                   tooltip={{
                     children: item.label,
                   }}

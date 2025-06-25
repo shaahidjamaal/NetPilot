@@ -240,9 +240,9 @@ export default function CustomerDetailPage() {
                                  </CardHeader>
                                  <CardContent className="flex flex-col gap-3">
                                      <Button onClick={handleRenewPackage}><Repeat className="mr-2 h-4 w-4" />Renew Package</Button>
-                                     <Button variant="secondary"><Replace className="mr-2 h-4 w-4" />Change Package</Button>
+                                     <Button variant="secondary" disabled><Replace className="mr-2 h-4 w-4" />Change Package</Button>
                                      <Button variant="secondary" onClick={() => setIsTopUpOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Top-up Data</Button>
-                                     <Button variant="secondary"><CalendarOff className="mr-2 h-4 w-4" />Change Expiry</Button>
+                                     <Button variant="secondary" disabled><CalendarOff className="mr-2 h-4 w-4" />Change Expiry</Button>
                                      <Button variant="destructive" onClick={() => setIsTerminateOpen(true)}><CircleSlash className="mr-2 h-4 w-4" />Terminate</Button>
                                  </CardContent>
                              </Card>

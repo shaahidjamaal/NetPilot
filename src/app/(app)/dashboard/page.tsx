@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, ArrowUp, IndianRupee, Signal, ShoppingCart } from "lucide-react"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Bar, BarChart as RechartsBarChart, CartesianGrid, Line, LineChart as RechartsLineChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { Bar, BarChart as RechartsBarChart, CartesianGrid, Cell, Line, LineChart as RechartsLineChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { useInvoices } from "@/hooks/use-invoices"
 import { usePackages } from "@/hooks/use-packages"
 import { isAfter, startOfMonth, subMonths } from 'date-fns'
@@ -29,6 +29,14 @@ const usageData = [
   { day: "Sat", usage: 2390 },
   { day: "Sun", usage: 3490 },
 ]
+
+const chartColors = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+];
 
 export default function DashboardPage() {
   const { invoices, isLoading: isLoadingInvoices } = useInvoices()
@@ -83,7 +91,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <IndianRupee className="h-4 w-4 text-muted-foreground" />
+            <IndianRupee className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{revenueData[5].revenue.toLocaleString('en-IN')}</div>
@@ -93,7 +101,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+1,234</div>
@@ -103,7 +111,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Package Sales</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            <ShoppingCart className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="space-y-1">
@@ -121,7 +129,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">New Subscriptions</CardTitle>
-            <ArrowUp className="h-4 w-4 text-muted-foreground" />
+            <ArrowUp className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+78</div>
@@ -144,7 +152,11 @@ export default function DashboardPage() {
                   cursor={false}
                   content={<ChartTooltipContent indicator="dot" />}
                 />
-                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={8} />
+                <Bar dataKey="revenue" radius={8}>
+                  {revenueData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
+                  ))}
+                </Bar>
               </RechartsBarChart>
             </ChartContainer>
           </CardContent>

@@ -55,10 +55,13 @@ const newCustomerSchema = z.object({
   sameAsPermanent: z.boolean().default(false).optional(),
   aadharNumber: z.string().regex(/^\d{12}$/, "Please enter a valid 12-digit Aadhar number."),
   aadharUpload: z.any()
-    .refine((files) => files?.length == 1, "Aadhar card upload is required.")
-    .refine((files) => files?.[0]?.size <= 5000000, `Max file size is 5MB.`)
+    .optional()
     .refine(
-      (files) => ["image/jpeg", "image/png", "application/pdf"].includes(files?.[0]?.type),
+      (files) => !files || files.length === 0 || files[0].size <= 5000000, 
+      `Max file size is 5MB.`
+    )
+    .refine(
+      (files) => !files || files.length === 0 || ["image/jpeg", "image/png", "application/pdf"].includes(files[0].type),
       ".jpg, .jpeg, .png and .pdf files are accepted."
     ),
 }).refine(data => {
@@ -497,7 +500,7 @@ export default function AddCustomerPage() {
                         />
                         </FormControl>
                         <FormDescription>
-                        Upload a scan of the Aadhar card (PDF, JPG, PNG).
+                          Upload is optional. Accepted formats: PDF, JPG, PNG.
                         </FormDescription>
                         <FormMessage />
                     </FormItem>

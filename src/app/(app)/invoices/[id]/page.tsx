@@ -47,9 +47,12 @@ export default function ViewInvoicePage() {
           const foundCustomer = getCustomerById(invoice.customerId);
           if(foundCustomer) {
               setCustomer(foundCustomer)
+          } else {
+            toast({ variant: "destructive", title: "Customer not found for this invoice" })
+            router.push("/billing")
           }
       }
-  }, [invoice, isLoadingCustomers, getCustomerById])
+  }, [invoice, isLoadingCustomers, getCustomerById, router, toast])
 
   const handlePrint = () => {
     window.print()

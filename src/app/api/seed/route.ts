@@ -5,6 +5,13 @@ import { createSuccessResponse, createErrorResponse } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if using external backend
+    const useExternalBackend = process.env.NEXT_PUBLIC_USE_EXTERNAL_BACKEND === 'true';
+
+    if (useExternalBackend) {
+      return createErrorResponse('This endpoint is not available when using external backend. Please use your NestJS backend instead.', 503);
+    }
+
     await connectDB();
 
     // Check if any users already exist

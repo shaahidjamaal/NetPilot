@@ -5,6 +5,13 @@ import { getUserFromRequest, createSuccessResponse, createErrorResponse } from '
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if using external backend
+    const useExternalBackend = process.env.NEXT_PUBLIC_USE_EXTERNAL_BACKEND === 'true';
+
+    if (useExternalBackend) {
+      return createErrorResponse('This endpoint is not available when using external backend. Please use your NestJS backend instead.', 503);
+    }
+
     await connectDB();
 
     // Get user from JWT token

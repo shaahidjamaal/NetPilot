@@ -1,8 +1,10 @@
+
 "use client"
 
 import { useState } from "react"
 import Link from "next/link"
-import { MoreHorizontal, PlusCircle } from "lucide-react"
+import { MoreHorizontal, PlusCircle, Loader2 } from "lucide-react"
+import { format } from "date-fns"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,22 +30,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-const initialCustomers = [
-  { id: "cus_1", name: "John Doe", email: "john.doe@example.com", servicePackage: "Fiber 100", status: "Active", joined: "2023-01-15" },
-  { id: "cus_2", name: "Jane Smith", email: "jane.smith@example.com", servicePackage: "Basic DSL", status: "Active", joined: "2022-11-30" },
-  { id: "cus_3", name: "Mike Johnson", email: "mike.j@example.com", servicePackage: "Fiber 500", status: "Suspended", joined: "2023-03-20" },
-  { id: "cus_4", name: "Emily Davis", email: "emily.d@example.com", servicePackage: "Fiber 1000", status: "Active", joined: "2021-08-10" },
-  { id: "cus_5", name: "Chris Wilson", email: "chris.w@example.com", servicePackage: "Basic DSL", status: "Inactive", joined: "2023-05-01" },
-  { id: "cus_6", name: "Sarah Brown", email: "sarah.b@example.com", servicePackage: "Fiber 100", status: "Active", joined: "2023-09-22" },
-]
-
-type Customer = typeof initialCustomers[0];
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useToast } from "@/hooks/use-toast"
+import { useCustomers } from "@/hooks/use-customers"
+import { type Customer } from "@/lib/types"
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers)
+  const { customers, deleteCustomer, isLoading } = useCustomers()
+  const { toast } = useToast()
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+
+  const handleDeleteClick = (customer: Customer) => {
+    setCustomerToDelete(customer);
+  };
+
+  const handleConfirmDelete = () => {
+      if (customerToDelete) {
+          deleteCustomer(customerToDelete.id);
+          toast({
+              title: "Customer Deleted",
+              description: `${customerToDelete.name} has been removed.`,
+          });
+          setCustomerToDelete(null);
+      }
+  };
+
+  if (isLoading) {
+    return (
+        <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+    )
+  }
   
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -88,7 +118,7 @@ export default function CustomersPage() {
                   </Badge>
                 </TableCell>
                 <TableCell>{customer.servicePackage}</TableCell>
-                <TableCell>{customer.joined}</TableCell>
+                <TableCell>{format(new Date(customer.joined), 'yyyy-MM-dd')}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -101,7 +131,7 @@ export default function CustomersPage() {
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem>Edit</DropdownMenuItem>
                       <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(customer)}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -111,5 +141,24 @@ export default function CustomersPage() {
         </Table>
       </CardContent>
     </Card>
+     {customerToDelete && (
+        <AlertDialog open={!!customerToDelete} onOpenChange={() => setCustomerToDelete(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the customer account for {customerToDelete.name}.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmDelete} variant="destructive">
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )}
+    </>
   )
 }

@@ -15,3 +15,18 @@ export type Package = {
   burstThresholdUpload?: number;
   burstTime?: number;
 }
+
+export type CustomerStatus = "Active" | "Suspended" | "Inactive";
+
+export type Customer = {
+  id: string;
+  name: string;
+  mobile: string;
+  email: string;
+  servicePackage: string;
+  status: CustomerStatus;
+  joined: string; // Should be ISO date string
+  permanentAddress: string;
+  installationAddress: string;
+  aadharNumber: string;
+};

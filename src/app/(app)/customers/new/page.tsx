@@ -33,6 +33,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft } from "lucide-react"
 import { usePackages } from "@/hooks/use-packages"
+import { useCustomers } from "@/hooks/use-customers"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const newCustomerSchema = z.object({
@@ -65,7 +66,8 @@ const newCustomerSchema = z.object({
 export default function AddCustomerPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { packages, isLoading } = usePackages()
+  const { packages, isLoading: isLoadingPackages } = usePackages()
+  const { addCustomer } = useCustomers()
   
   const form = useForm<z.infer<typeof newCustomerSchema>>({
     resolver: zodResolver(newCustomerSchema),
@@ -92,8 +94,8 @@ export default function AddCustomerPage() {
 
 
   function onSubmit(values: z.infer<typeof newCustomerSchema>) {
-    // In a real app, you'd send this data to your server
-    console.log(values)
+    const { aadharUpload, sameAsPermanent, ...customerData } = values;
+    addCustomer(customerData);
     toast({
       title: "Customer Added Successfully",
       description: `${values.name} has been added to the customer list.`,
@@ -167,7 +169,7 @@ export default function AddCustomerPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Service Package</FormLabel>
-                       {isLoading ? (
+                       {isLoadingPackages ? (
                          <Skeleton className="h-10 w-full" />
                        ) : (
                         <Select onValueChange={field.onChange} defaultValue={field.value}>

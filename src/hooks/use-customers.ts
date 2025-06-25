@@ -1,0 +1,74 @@
+
+'use client'
+
+import { type Customer } from '@/lib/types';
+import { useState, useEffect, useCallback } from 'react';
+
+const initialCustomers: Customer[] = [
+  { id: "cus_1", name: "John Doe", email: "john.doe@example.com", mobile: "9876543210", servicePackage: "Fiber 100", status: "Active", joined: new Date("2023-01-15").toISOString(), permanentAddress: "123 Main St, Anytown", installationAddress: "123 Main St, Anytown", aadharNumber: "123456789012" },
+  { id: "cus_2", name: "Jane Smith", email: "jane.smith@example.com", mobile: "9876543211", servicePackage: "Basic DSL", status: "Active", joined: new Date("2022-11-30").toISOString(), permanentAddress: "456 Oak Ave, Otherville", installationAddress: "456 Oak Ave, Otherville", aadharNumber: "123456789013" },
+  { id: "cus_3", name: "Mike Johnson", email: "mike.j@example.com", mobile: "9876543212", servicePackage: "Fiber 500", status: "Suspended", joined: new Date("2023-03-20").toISOString(), permanentAddress: "789 Pine Ln, Somewhere", installationAddress: "789 Pine Ln, Somewhere", aadharNumber: "123456789014" },
+  { id: "cus_4", name: "Emily Davis", email: "emily.d@example.com", mobile: "9876543213", servicePackage: "Fiber 1000", status: "Active", joined: new Date("2021-08-10").toISOString(), permanentAddress: "101 Maple Dr, Anyplace", installationAddress: "101 Maple Dr, Anyplace", aadharNumber: "123456789015" },
+  { id: "cus_5", name: "Chris Wilson", email: "chris.w@example.com", mobile: "9876543214", servicePackage: "Basic DSL", status: "Inactive", joined: new Date("2023-05-01").toISOString(), permanentAddress: "212 Birch Rd, Nowhere", installationAddress: "212 Birch Rd, Nowhere", aadharNumber: "123456789016" },
+  { id: "cus_6", name: "Sarah Brown", email: "sarah.b@example.com", mobile: "9876543215", servicePackage: "Fiber 100", status: "Active", joined: new Date("2023-09-22").toISOString(), permanentAddress: "333 Cedar Ct, Elsewhere", installationAddress: "333 Cedar Ct, Elsewhere", aadharNumber: "123456789017" },
+]
+
+const STORAGE_KEY = 'netpilot-customers';
+
+export function useCustomers() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const item = window.localStorage.getItem(STORAGE_KEY);
+      if (item) {
+        setCustomers(JSON.parse(item));
+      } else {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(initialCustomers));
+        setCustomers(initialCustomers);
+      }
+    } catch (error) {
+      console.error(error);
+      setCustomers(initialCustomers);
+    }
+    setIsLoading(false);
+  }, []);
+
+  const updateLocalStorage = useCallback((newCustomers: Customer[]) => {
+    try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newCustomers));
+        setCustomers(newCustomers);
+    } catch (error) {
+        console.error("Failed to update customers in localStorage", error);
+    }
+  }, []);
+
+  const addCustomer = useCallback((customerData: Omit<Customer, 'id' | 'status' | 'joined'>) => {
+    const newCustomer: Customer = {
+      ...customerData,
+      id: `cus_${new Date().getTime()}`,
+      status: 'Active',
+      joined: new Date().toISOString(),
+    };
+    
+    const newCustomers = [...customers, newCustomer];
+    updateLocalStorage(newCustomers);
+  }, [customers, updateLocalStorage]);
+  
+  const getCustomerById = useCallback((id: string) => {
+    return customers.find(c => c.id === id);
+  }, [customers]);
+  
+  const updateCustomer = useCallback((id: string, updatedCustomerData: Partial<Omit<Customer, 'id'>>) => {
+    const newCustomers = customers.map(c => c.id === id ? { ...c, ...updatedCustomerData } : c);
+    updateLocalStorage(newCustomers);
+  }, [customers, updateLocalStorage]);
+
+  const deleteCustomer = useCallback((id: string) => {
+      const newCustomers = customers.filter(c => c.id !== id);
+      updateLocalStorage(newCustomers);
+  }, [customers, updateLocalStorage]);
+
+  return { customers, addCustomer, getCustomerById, updateCustomer, deleteCustomer, isLoading };
+}

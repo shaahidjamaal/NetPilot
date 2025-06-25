@@ -68,5 +68,18 @@ export function useUsers() {
     updateLocalStorageAndState(newUsers);
   }, [updateLocalStorageAndState]);
 
-  return { users, addUser, updateUser, deleteUser, isLoading };
+  const login = useCallback(async (email: string, password?: string): Promise<User | null> => {
+    const currentUsers = getUsersFromStorage();
+    const user = currentUsers.find(u => u.email === email);
+
+    // In a real app, you'd also check the password.
+    // For this prototype, we'll just check if the user exists and is enabled.
+    if (user && user.enabled) {
+      return user;
+    }
+
+    return null;
+  }, []);
+
+  return { users, addUser, updateUser, deleteUser, login, isLoading };
 }

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -31,6 +32,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft } from "lucide-react"
+import { usePackages } from "@/hooks/use-packages"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const newCustomerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -62,9 +65,8 @@ const newCustomerSchema = z.object({
 export default function AddCustomerPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { packages, isLoading } = usePackages()
   
-  const packages = ["Basic DSL", "Fiber 100", "Fiber 500", "Fiber 1000"];
-
   const form = useForm<z.infer<typeof newCustomerSchema>>({
     resolver: zodResolver(newCustomerSchema),
     defaultValues: {
@@ -165,18 +167,22 @@ export default function AddCustomerPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Service Package</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a package" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {packages.map(pkg => (
-                            <SelectItem key={pkg} value={pkg}>{pkg}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                       {isLoading ? (
+                         <Skeleton className="h-10 w-full" />
+                       ) : (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a package" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {packages.map(pkg => (
+                              <SelectItem key={pkg.name} value={pkg.name}>{pkg.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                       )}
                       <FormMessage />
                     </FormItem>
                   )}

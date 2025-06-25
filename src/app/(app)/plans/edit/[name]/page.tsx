@@ -5,7 +5,7 @@ import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -29,9 +29,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { usePackages } from "@/hooks/use-packages"
+import { type Package } from "@/lib/types"
 
 const newPackageSchema = z.object({
   name: z.string().min(3, "Package name must be at least 3 characters."),
@@ -58,35 +59,54 @@ const newPackageSchema = z.object({
     path: ["burstEnabled"],
 });
 
-
-export default function AddPackagePage() {
+export default function EditPackagePage() {
   const router = useRouter()
+  const params = useParams()
   const { toast } = useToast()
-  const { addPackage } = usePackages()
+  const { getPackageByName, updatePackage, isLoading } = usePackages()
 
+  const name = params.name ? decodeURIComponent(params.name as string) : ""
+  const [pkg, setPkg] = React.useState<Package | undefined>(undefined);
+  
   const form = useForm<z.infer<typeof newPackageSchema>>({
     resolver: zodResolver(newPackageSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: undefined,
-      validity: 30,
-      downloadSpeed: undefined,
-      uploadSpeed: undefined,
-      dataLimit: "Unlimited",
-      burstEnabled: false,
-    },
   })
+
+  React.useEffect(() => {
+    if (!isLoading && name) {
+      const foundPkg = getPackageByName(name)
+      if (foundPkg) {
+        setPkg(foundPkg)
+        form.reset(foundPkg)
+      } else {
+        toast({
+            variant: "destructive",
+            title: "Package not found",
+            description: `Could not find a package named "${name}".`,
+        })
+        router.push("/plans")
+      }
+    }
+  }, [isLoading, name, getPackageByName, form, router, toast])
+
 
   const burstEnabled = form.watch("burstEnabled");
 
   function onSubmit(values: z.infer<typeof newPackageSchema>) {
-    addPackage(values);
+    updatePackage(name, values)
     toast({
-      title: "Package Created Successfully",
-      description: `${values.name} has been created.`,
+      title: "Package Updated Successfully",
+      description: `${values.name} has been updated.`,
     })
     router.push("/plans")
+  }
+
+  if (isLoading || !pkg) {
+      return (
+          <div className="flex h-64 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+      )
   }
 
   return (
@@ -99,8 +119,8 @@ export default function AddPackagePage() {
                 </Link>
             </Button>
             <div>
-              <CardTitle>Create New Service Package</CardTitle>
-              <CardDescription>Fill out the form below to add a new package.</CardDescription>
+              <CardTitle>Edit Service Package: {name}</CardTitle>
+              <CardDescription>Update the details for this package.</CardDescription>
             </div>
         </div>
       </CardHeader>
@@ -316,7 +336,7 @@ export default function AddPackagePage() {
             
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
-            <Button type="submit">Create Package</Button>
+            <Button type="submit">Save Changes</Button>
           </CardFooter>
         </form>
       </Form>

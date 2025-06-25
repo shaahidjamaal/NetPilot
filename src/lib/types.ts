@@ -157,6 +157,21 @@ export type AppSettings = {
   customerIdSuffix: IdSuffixType;
 };
 
+export type BillingProfile = {
+  profileName: string;
+  companyName: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zip: string;
+  phone: string;
+  gstNumber?: string;
+  cgstRate: number;
+  sgstRate: number;
+  invoiceTerms?: string;
+};
+
 export const ticketStatuses = ["Open", "In Progress", "Closed"] as const;
 export type TicketStatus = (typeof ticketStatuses)[number];
 

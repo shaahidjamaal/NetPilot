@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation"
 
 import { useSettings } from "@/hooks/use-settings"
 import { useToast } from "@/hooks/use-toast"
-import { type AppSettings, idSuffixOptions, idSuffixLabels } from "@/lib/types"
+import { type AppSettings, idSuffixOptions, idSuffixLabels, type BillingProfile } from "@/lib/types"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -17,12 +17,14 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Settings as SettingsIcon, CreditCard, MessageSquare, Mail, Network, Info, Server, MoreHorizontal, MapPin } from "lucide-react"
+import { Loader2, Settings as SettingsIcon, CreditCard, MessageSquare, Mail, Network, Info, Server, MoreHorizontal, MapPin, Briefcase } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { useBillingProfile } from "@/hooks/use-billing-profile"
 
 
 // General Settings Tab Content
@@ -164,6 +166,157 @@ function GeneralSettingsTab() {
     </Card>
   )
 }
+
+// Billing Profile Tab
+const billingProfileSchema = z.object({
+  profileName: z.string().min(1, "Profile name is required."),
+  companyName: z.string().min(1, "Company name is required."),
+  address: z.string().min(1, "Address is required."),
+  city: z.string().min(1, "City is required."),
+  state: z.string().min(1, "State is required."),
+  country: z.string().min(1, "Country is required."),
+  zip: z.string().min(1, "Zip code is required."),
+  phone: z.string().min(1, "Phone number is required."),
+  gstNumber: z.string().optional(),
+  cgstRate: z.coerce.number().min(0).max(100),
+  sgstRate: z.coerce.number().min(0).max(100),
+  invoiceTerms: z.string().optional(),
+});
+
+function BillingProfileTab() {
+  const { profile, updateProfile, isLoading } = useBillingProfile();
+  const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof billingProfileSchema>>({
+    resolver: zodResolver(billingProfileSchema),
+    defaultValues: profile
+  });
+
+  React.useEffect(() => {
+    if (!isLoading && profile) {
+      form.reset(profile);
+    }
+  }, [isLoading, profile, form]);
+
+  const cgst = form.watch("cgstRate") || 0;
+  const sgst = form.watch("sgstRate") || 0;
+  const totalGst = cgst + sgst;
+
+  const onSubmit = (values: z.infer<typeof billingProfileSchema>) => {
+    updateProfile(values);
+    toast({
+      title: "Billing Profile Saved",
+      description: "Your billing profile has been updated.",
+    });
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <Card>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <CardHeader>
+            <CardTitle>Billing Profile</CardTitle>
+            <CardDescription>Manage your company's information for invoices.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Company Details</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <FormField control={form.control} name="profileName" render={({ field }) => (
+                  <FormItem><FormLabel>Profile Name</FormLabel><FormControl><Input placeholder="Main Billing Profile" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="companyName" render={({ field }) => (
+                  <FormItem><FormLabel>Company Name</FormLabel><FormControl><Input placeholder="Your Company LLC" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+              </div>
+            </div>
+            
+            <Separator />
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Address & Contact</h3>
+              <div className="grid gap-6">
+                  <FormField control={form.control} name="address" render={({ field }) => (
+                    <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="123 Business Rd" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <FormField control={form.control} name="city" render={({ field }) => (
+                  <FormItem><FormLabel>City</FormLabel><FormControl><Input placeholder="Businesstown" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="state" render={({ field }) => (
+                  <FormItem><FormLabel>State</FormLabel><FormControl><Input placeholder="State" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="country" render={({ field }) => (
+                  <FormItem><FormLabel>Country</FormLabel><FormControl><Input placeholder="Country" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="zip" render={({ field }) => (
+                  <FormItem><FormLabel>ZIP Code</FormLabel><FormControl><Input placeholder="12345" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+              </div>
+               <div className="grid md:grid-cols-2 gap-6">
+                 <FormField control={form.control} name="phone" render={({ field }) => (
+                    <FormItem><FormLabel>Phone</FormLabel><FormControl><Input placeholder="+1 234 567 890" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                <FormField control={form.control} name="gstNumber" render={({ field }) => (
+                  <FormItem><FormLabel>GST Number</FormLabel><FormControl><Input placeholder="27ABCDE1234F1Z5" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+              </div>
+            </div>
+
+            <Separator />
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Tax Information</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                 <FormField control={form.control} name="cgstRate" render={({ field }) => (
+                    <FormItem><FormLabel>CGST Rate</FormLabel><FormControl><div className="relative"><Input type="number" placeholder="9" {...field} /><span className="absolute inset-y-0 right-3 flex items-center text-muted-foreground">%</span></div></FormControl><FormMessage /></FormItem>
+                  )} />
+                 <FormField control={form.control} name="sgstRate" render={({ field }) => (
+                    <FormItem><FormLabel>SGST Rate</FormLabel><FormControl><div className="relative"><Input type="number" placeholder="9" {...field} /><span className="absolute inset-y-0 right-3 flex items-center text-muted-foreground">%</span></div></FormControl><FormMessage /></FormItem>
+                  )} />
+                <FormItem>
+                  <FormLabel>Total GST Rate</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input value={totalGst} disabled /><span className="absolute inset-y-0 right-3 flex items-center text-muted-foreground">%</span>
+                    </div>
+                  </FormControl>
+                </FormItem>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Invoice Terms</h3>
+              <FormField control={form.control} name="invoiceTerms" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Terms and Conditions</FormLabel>
+                  <FormControl><Textarea placeholder="e.g., Payment is due within 30 days." className="min-h-24" {...field} /></FormControl>
+                  <FormDescription>This will appear on all generated invoices.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+          </CardContent>
+          <CardFooter className="border-t px-6 py-4">
+            <Button type="submit">Save Billing Profile</Button>
+          </CardFooter>
+        </form>
+      </Form>
+    </Card>
+  );
+}
+
 
 // NAS & IP Pool Tab Content
 type NasDevice = { id: string; name: string; ip: string; status: "Online" | "Offline"; };
@@ -352,8 +505,9 @@ function SettingsPageContent() {
         <p className="text-muted-foreground">Configure your NetPilot application.</p>
       </div>
       <Tabs defaultValue={tab} className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
           <TabsTrigger value="general"><SettingsIcon className="mr-2 h-4 w-4" />General</TabsTrigger>
+          <TabsTrigger value="billing"><Briefcase className="mr-2 h-4 w-4" />Billing Profile</TabsTrigger>
           <TabsTrigger value="payment"><CreditCard className="mr-2 h-4 w-4" />Payment</TabsTrigger>
           <TabsTrigger value="sms"><MessageSquare className="mr-2 h-4 w-4" />SMS</TabsTrigger>
           <TabsTrigger value="email"><Mail className="mr-2 h-4 w-4" />Email</TabsTrigger>
@@ -362,6 +516,9 @@ function SettingsPageContent() {
         </TabsList>
         <TabsContent value="general" className="mt-6">
           <GeneralSettingsTab />
+        </TabsContent>
+        <TabsContent value="billing" className="mt-6">
+          <BillingProfileTab />
         </TabsContent>
         <TabsContent value="payment" className="mt-6">
           <PlaceholderTab 

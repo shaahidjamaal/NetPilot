@@ -205,7 +205,6 @@ function UserManagementTab() {
         toast({ title: "User Created", description: `${values.email} has been created.` })
     }
     setIsUserDialogOpen(false)
-    form.reset();
   }
 
   const handleDeleteUser = (user: User) => {

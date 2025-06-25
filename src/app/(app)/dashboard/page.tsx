@@ -108,7 +108,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">₹{salesData.currentMonthTotal.toLocaleString('en-IN')}</div>
             <p className="text-xs text-muted-foreground">
-              {salesData.comparison >= 0 ? '+' : ''}{salesData.comparison.toFixed(1)}% from last month
+              vs. ₹{salesData.previousMonthTotal.toLocaleString('en-IN')} last month
             </p>
           </CardContent>
         </Card>

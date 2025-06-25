@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Download, Upload, Gauge, Users } from "lucide-react"
+import { Download, Gauge, PlusCircle, Upload, Users } from "lucide-react"
+import Link from "next/link"
 
 const plans = [
   { name: "Basic DSL", price: 2499, download: 25, upload: 5, data: "Unlimited", users: "1-2" },
@@ -18,7 +18,12 @@ export default function PlansPage() {
           <h1 className="text-3xl font-bold tracking-tight">Service Plans</h1>
           <p className="text-muted-foreground">Create, modify, and track various service plans.</p>
         </div>
-        <Button>Create New Plan</Button>
+        <Link href="/plans/new" passHref>
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create New Plan
+          </Button>
+        </Link>
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => (

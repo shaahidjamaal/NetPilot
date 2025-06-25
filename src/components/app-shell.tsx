@@ -34,6 +34,7 @@ import {
   Package,
   Shield,
   Lightbulb,
+  BarChart,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "./theme-toggle";
@@ -50,6 +51,7 @@ const navItems = [
     { href: "/recommendations", icon: Lightbulb, label: "AI Recommendations"},
     { href: "/tickets", icon: Ticket, label: "Tickets" },
     { href: "/leads", icon: UserPlus, label: "Leads" },
+    { href: "/reports", icon: BarChart, label: "Reports" },
 ];
 
 const systemNavItems = [

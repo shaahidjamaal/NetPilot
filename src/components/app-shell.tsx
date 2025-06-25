@@ -38,7 +38,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/customers", icon: Users, label: "Subscribers" },
+    { href: "/customers", icon: Users, label: "Customers" },
     { href: "/online-subscribers", icon: Wifi, label: "Online Subscribers" },
     { href: "/access-request-log", icon: FileClock, label: "Access Request Log" },
     { href: "/reports", icon: BarChart2, label: "Reports" },

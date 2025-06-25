@@ -12,7 +12,7 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null,>(null);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 const AUTH_STORAGE_KEY = 'netpilot-auth-user';
 
@@ -69,7 +69,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = { user, login, logout, isLoading };
 
   // We don't render anything until the initial auth check is complete.
-  return <AuthContext.Provider value={value}>{!isLoading && children}</AuthContext.Provider>;
+  // Using React.createElement instead of JSX to avoid parsing issues in a .ts file.
+  return React.createElement(
+    AuthContext.Provider,
+    { value: value },
+    !isLoading ? children : null
+  );
 }
 
 export function useAuth() {

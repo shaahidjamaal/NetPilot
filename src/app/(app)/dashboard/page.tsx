@@ -137,7 +137,7 @@ export default function DashboardPage() {
                   cursor={false}
                   content={<ChartTooltipContent indicator="dot" />}
                 />
-                <Bar dataKey="revenue" fill="var(--color-primary)" radius={8} />
+                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={8} />
               </RechartsBarChart>
             </ChartContainer>
           </CardContent>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                   cursor={false}
                   content={<ChartTooltipContent indicator="dot" />}
                 />
-                <Line type="monotone" dataKey="usage" stroke="var(--color-accent)" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="usage" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} />
               </RechartsLineChart>
             </ChartContainer>
           </CardContent>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
                   content={<ChartTooltipContent indicator="dot" />}
                 />
                 <Legend />
-                <Bar dataKey="previous" name="Previous Month" fill="hsl(var(--secondary))" radius={4} />
+                <Bar dataKey="previous" name="Previous Month" fill="hsl(var(--accent))" radius={4} />
                 <Bar dataKey="current" name="Current Month" fill="hsl(var(--primary))" radius={4} />
               </RechartsBarChart>
             </ChartContainer>

@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      if (!config.resolve.fallback) {
+        config.resolve.fallback = {};
+      }
+      config.resolve.fallback['source-map-support'] = false;
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

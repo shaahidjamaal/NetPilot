@@ -1,7 +1,5 @@
 'use server';
 
-import RouterOS from 'node-routeros';
-
 function getMikrotikCredentials() {
     const host = process.env.MIKROTIK_HOST;
     const user = process.env.MIKROTIK_USER;
@@ -22,10 +20,14 @@ export async function testMikrotikConnection() {
 
     const { host, user, password } = creds;
 
-    // The library is untyped, so we handle it carefully.
-    const conn = new (RouterOS as any)({ host, user, password });
-
     try {
+        // Dynamically require the library inside the server action
+        // to ensure it's only loaded on the server when needed.
+        const RouterOS = require('node-routeros');
+
+        // The library is untyped, so we handle it carefully.
+        const conn = new (RouterOS as any)({ host, user, password });
+
         await conn.connect();
         // A simple, non-intrusive command to verify the connection is live.
         await conn.write('/system/resource/print');

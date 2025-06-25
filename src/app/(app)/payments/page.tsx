@@ -22,7 +22,7 @@ export default function PaymentsPage() {
     
     return payments.map(payment => {
       const customer = customers.find(c => c.id === payment.customerId);
-      const receivedBy = ['Online Gateway'].includes(payment.method) ? 'Online Payment' : 'Admin';
+      const receivedBy = ['Online Gateway', 'Bank Transfer'].includes(payment.method) ? 'Online Payment' : 'Admin';
       
       return {
         ...payment,
@@ -64,7 +64,7 @@ export default function PaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Customer ID</TableHead>
+                <TableHead>Transaction ID</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Payment Date</TableHead>
@@ -75,7 +75,7 @@ export default function PaymentsPage() {
             <TableBody>
               {paymentDetails.map((payment) => (
                 <TableRow key={payment.id}>
-                  <TableCell className="font-mono text-xs">{payment.customerId}</TableCell>
+                  <TableCell className="font-mono text-xs">{payment.transactionId || payment.id}</TableCell>
                   <TableCell>
                     <div className="font-medium">{payment.customerName}</div>
                     <div className="text-sm text-muted-foreground">{payment.pppoeUsername}</div>

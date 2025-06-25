@@ -48,7 +48,6 @@ const navItems = [
     { href: "/inventory", icon: Boxes, label: "Inventory" },
     { href: "/zones", icon: MapPin, label: "Zones" },
     { href: "/online-subscribers", icon: Wifi, label: "Online Subscribers" },
-    { href: "/recommendations", icon: Lightbulb, label: "AI Recommendations"},
     { href: "/tickets", icon: Ticket, label: "Tickets" },
     { href: "/leads", icon: UserPlus, label: "Leads" },
     { href: "/reports", icon: BarChart, label: "Reports" },

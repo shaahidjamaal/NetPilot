@@ -4,13 +4,15 @@
 import * as React from "react"
 import { addDays, format, startOfMonth, isWithinInterval, isBefore } from "date-fns"
 import { DateRange } from "react-day-picker"
-import { Loader2, FileText, FileCheck2, FileClock, FileX2 } from "lucide-react"
+import { Loader2, FileText, FileCheck2, FileClock, FileX2, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DateRangePicker } from "@/components/date-range-picker"
 import { Badge } from "@/components/ui/badge"
 import { useInvoices } from "@/hooks/use-invoices"
+import { Button } from "@/components/ui/button"
 
 export default function InvoiceSummaryPage() {
     const [date, setDate] = React.useState<DateRange | undefined>({
@@ -72,9 +74,17 @@ export default function InvoiceSummaryPage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-            <h1 className="text-3xl font-bold tracking-tight">Invoice Summary Report</h1>
-            <p className="text-muted-foreground">Track paid, unpaid, and overdue invoices.</p>
+        <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" asChild>
+                <Link href="/reports">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Back</span>
+                </Link>
+            </Button>
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Invoice Summary Report</h1>
+                <p className="text-muted-foreground">Track paid, unpaid, and overdue invoices.</p>
+            </div>
         </div>
         <DateRangePicker date={date} onDateChange={setDate} />
       </div>

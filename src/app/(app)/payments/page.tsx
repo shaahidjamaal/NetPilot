@@ -3,15 +3,22 @@
 
 import * as React from "react"
 import { format } from "date-fns"
-import { Loader2 } from "lucide-react"
+import { Loader2, ArrowLeft } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import Link from "next/link"
 
 import { usePayments } from "@/hooks/use-payments"
 import { useCustomers } from "@/hooks/use-customers"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 
-export default function PaymentsPage() {
+
+function PaymentsPageContent() {
+  const searchParams = useSearchParams();
+  const fromReports = searchParams.get('from') === 'reports';
+
   const { payments, isLoading: isLoadingPayments } = usePayments()
   const { customers, isLoading: isLoadingCustomers } = useCustomers()
   
@@ -50,60 +57,78 @@ export default function PaymentsPage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Payments History</CardTitle>
-        <CardDescription>A log of all payments made by customers.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex h-64 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Transaction ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Payment Date</TableHead>
-                <TableHead>Received By</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paymentDetails.map((payment) => (
-                <TableRow key={payment.id}>
-                  <TableCell className="font-mono text-xs">{payment.transactionId || payment.id}</TableCell>
-                  <TableCell>
-                    <div className="font-medium">{payment.customerName}</div>
-                    <div className="text-sm text-muted-foreground">{payment.pppoeUsername}</div>
-                  </TableCell>
-                  <TableCell className="text-right">₹{payment.amount.toLocaleString('en-IN')}</TableCell>
-                  <TableCell>{format(new Date(payment.paymentDate), "PPP")}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{payment.receivedBy}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={getStatusBadgeVariant(payment.status)} 
-                      className={getStatusBadgeClass(payment.status)}
-                    >
-                      {payment.status}
-                    </Badge>
-                  </TableCell>
+    <div className="space-y-4">
+      {fromReports && (
+        <Button variant="outline" asChild>
+          <Link href="/reports">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Reports Center
+          </Link>
+        </Button>
+      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payments History</CardTitle>
+          <CardDescription>A log of all payments made by customers.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex h-64 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Transaction ID</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>Payment Date</TableHead>
+                  <TableHead>Received By</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-        {!isLoading && paymentDetails.length === 0 && (
-          <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg mt-4">
-            No payments have been recorded yet.
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              </TableHeader>
+              <TableBody>
+                {paymentDetails.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell className="font-mono text-xs">{payment.transactionId || payment.id}</TableCell>
+                    <TableCell>
+                      <div className="font-medium">{payment.customerName}</div>
+                      <div className="text-sm text-muted-foreground">{payment.pppoeUsername}</div>
+                    </TableCell>
+                    <TableCell className="text-right">₹{payment.amount.toLocaleString('en-IN')}</TableCell>
+                    <TableCell>{format(new Date(payment.paymentDate), "PPP")}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{payment.receivedBy}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={getStatusBadgeVariant(payment.status)} 
+                        className={getStatusBadgeClass(payment.status)}
+                      >
+                        {payment.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          {!isLoading && paymentDetails.length === 0 && (
+            <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg mt-4">
+              No payments have been recorded yet.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default function PaymentsPage() {
+  return (
+    <React.Suspense fallback={<div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+      <PaymentsPageContent />
+    </React.Suspense>
   )
 }

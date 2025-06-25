@@ -2,5 +2,5 @@
 import { redirect } from 'next/navigation';
 
 export default function ReportRedirectPage() {
-  redirect('/payments');
+  redirect('/payments?from=reports');
 }

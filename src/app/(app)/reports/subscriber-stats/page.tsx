@@ -4,13 +4,15 @@
 import * as React from "react"
 import { startOfMonth, isWithinInterval } from "date-fns"
 import { DateRange } from "react-day-picker"
-import { Loader2, Users, UserPlus, UserCheck, UserX } from "lucide-react"
+import { Loader2, Users, UserPlus, UserCheck, UserX, ArrowLeft } from "lucide-react"
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Cell } from "recharts"
+import Link from "next/link"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DateRangePicker } from "@/components/date-range-picker"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useCustomers } from "@/hooks/use-customers"
+import { Button } from "@/components/ui/button"
 
 export default function SubscriberStatsPage() {
     const [date, setDate] = React.useState<DateRange | undefined>({
@@ -53,9 +55,17 @@ export default function SubscriberStatsPage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-            <h1 className="text-3xl font-bold tracking-tight">Subscriber Statistics</h1>
-            <p className="text-muted-foreground">View active, inactive, and new customer data.</p>
+        <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" asChild>
+                <Link href="/reports">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Back</span>
+                </Link>
+            </Button>
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Subscriber Statistics</h1>
+                <p className="text-muted-foreground">View active, inactive, and new customer data.</p>
+            </div>
         </div>
         <div className="flex flex-col items-start sm:items-end gap-1">
             <span className="text-sm text-muted-foreground">New Customers Date Range</span>

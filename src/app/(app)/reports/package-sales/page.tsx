@@ -4,8 +4,9 @@
 import * as React from "react"
 import { addDays, format, startOfMonth } from "date-fns"
 import { DateRange } from "react-day-picker"
-import { Loader2, IndianRupee, ShoppingCart } from "lucide-react"
+import { Loader2, IndianRupee, ShoppingCart, ArrowLeft } from "lucide-react"
 import { Bar, BarChart as RechartsBarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts"
+import Link from "next/link"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
@@ -13,6 +14,7 @@ import { DateRangePicker } from "@/components/date-range-picker"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useInvoices } from "@/hooks/use-invoices"
 import { usePackages } from "@/hooks/use-packages"
+import { Button } from "@/components/ui/button"
 
 export default function PackageSalesReportPage() {
     const [date, setDate] = React.useState<DateRange | undefined>({
@@ -65,9 +67,17 @@ export default function PackageSalesReportPage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-            <h1 className="text-3xl font-bold tracking-tight">Package Sales Report</h1>
-            <p className="text-muted-foreground">Analyze revenue from different service packages.</p>
+        <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" asChild>
+                <Link href="/reports">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Back</span>
+                </Link>
+            </Button>
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Package Sales Report</h1>
+                <p className="text-muted-foreground">Analyze revenue from different service packages.</p>
+            </div>
         </div>
         <DateRangePicker date={date} onDateChange={setDate} />
       </div>

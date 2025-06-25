@@ -26,45 +26,52 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/hooks/use-auth"
 import { Loader2, Network } from "lucide-react"
+import Link from "next/link"
+import { authApi, handleApiResponse } from "@/lib/api-config"
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address."),
+  usernameOrEmail: z.string().min(1, "Username or email is required."),
   password: z.string().min(1, "Password is required."),
 })
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login } = useAuth()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = React.useState(false)
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      usernameOrEmail: "", // Empty for production
       password: "",
     },
   })
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setIsLoading(true)
-    const success = await login(values.email, values.password)
-    setIsLoading(false)
 
-    if (success) {
+    try {
+      const response = await authApi.login(values);
+      const data = await handleApiResponse(response);
+
+      // Store the token
+      localStorage.setItem('netpilot-token', data.access_token)
+
       toast({
         title: "Login Successful",
         description: "Welcome back!",
       })
+
       router.push("/dashboard")
-    } else {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
+        description: error.message || "An unexpected error occurred. Please try again.",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -83,12 +90,12 @@ export default function LoginPage() {
           <CardContent className="space-y-4">
             <FormField
               control={form.control}
-              name="email"
+              name="usernameOrEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>Username or Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="admin@example.com" {...field} />
+                    <Input placeholder="admin@example.com or username" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -108,11 +115,17 @@ export default function LoginPage() {
               )}
             />
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
+            <p className="text-sm text-muted-foreground text-center">
+              Don't have an account?{" "}
+              <Link href="/register" className="text-primary hover:underline">
+                Create account
+              </Link>
+            </p>
           </CardFooter>
         </form>
       </Form>

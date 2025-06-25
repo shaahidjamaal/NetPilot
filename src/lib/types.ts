@@ -89,11 +89,16 @@ export type Zone = {
 export type User = {
   id: string;
   email: string;
+  username?: string;
   password?: string;
+  firstName?: string;
+  lastName?: string;
   userType: 'Admin Staff' | 'Office Staff';
   designation: string;
   roleId: string;
   enabled: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type InvoiceStatus = "Paid" | "Unpaid" | "Overdue";

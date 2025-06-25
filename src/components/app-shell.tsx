@@ -195,7 +195,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar>
                   <AvatarImage
-                    src={avatar || "https://placehold.co/40x40"}
+                    src={avatar || "https://placehold.co/32x32"}
                     alt="@user"
                     data-ai-hint="avatar"
                   />

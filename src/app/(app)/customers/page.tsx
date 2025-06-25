@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { MoreHorizontal, PlusCircle, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Search, Download, FileUp, ChevronDown } from "lucide-react"
@@ -78,6 +78,11 @@ export default function CustomersPage() {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+
+  const [isClient, setIsClient] = useState(false)
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
 
   const handleDeleteClick = (customer: Customer) => {
@@ -185,7 +190,7 @@ export default function CustomersPage() {
     if (customer.status === 'Inactive') {
         return { text: 'Terminated', variant: 'destructive' as const, className: 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400' };
     }
-    if (customer.expiryDate && isBefore(new Date(customer.expiryDate), new Date())) {
+    if (isClient && customer.expiryDate && isBefore(new Date(customer.expiryDate), new Date())) {
         return { text: 'Expired', variant: 'secondary' as const, className: 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400' };
     }
     return { text: 'Active', variant: 'default' as const, className: 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400' };
@@ -215,7 +220,7 @@ export default function CustomersPage() {
     XLSX.writeFile(workbook, `customers.${format}`);
     
     toast({ title: 'Export Complete', description: `Customer list has been exported as a ${format.toUpperCase()} file.` });
-  }, [sortedCustomers, toast]);
+  }, [sortedCustomers, toast, getPackageStatus]);
 
 
   const handleImport = async () => {
@@ -487,3 +492,5 @@ export default function CustomersPage() {
     </>
   )
 }
+
+    

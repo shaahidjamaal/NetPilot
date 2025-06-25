@@ -36,7 +36,7 @@ const newCustomerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Please enter a valid email address."),
-  plan: z.string({ required_error: "Please select a service plan." }),
+  servicePackage: z.string({ required_error: "Please select a service package." }),
   permanentAddress: z.string().min(10, "Address must be at least 10 characters."),
   installationAddress: z.string().min(10, "Address must be at least 10 characters."),
   sameAsPermanent: z.boolean().default(false).optional(),
@@ -63,7 +63,7 @@ export default function AddCustomerPage() {
   const router = useRouter()
   const { toast } = useToast()
   
-  const plans = ["Basic DSL", "Fiber 100", "Fiber 500", "Fiber 1000"];
+  const packages = ["Basic DSL", "Fiber 100", "Fiber 500", "Fiber 1000"];
 
   const form = useForm<z.infer<typeof newCustomerSchema>>({
     resolver: zodResolver(newCustomerSchema),
@@ -71,7 +71,7 @@ export default function AddCustomerPage() {
       name: "",
       mobile: "",
       email: "",
-      plan: undefined,
+      servicePackage: undefined,
       permanentAddress: "",
       installationAddress: "",
       sameAsPermanent: false,
@@ -161,19 +161,19 @@ export default function AddCustomerPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="plan"
+                  name="servicePackage"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Service Plan</FormLabel>
+                      <FormLabel>Service Package</FormLabel>
                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a plan" />
+                            <SelectValue placeholder="Select a package" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {plans.map(plan => (
-                            <SelectItem key={plan} value={plan}>{plan}</SelectItem>
+                          {packages.map(pkg => (
+                            <SelectItem key={pkg} value={pkg}>{pkg}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

@@ -30,12 +30,12 @@ import {
 } from "@/components/ui/table"
 
 const initialCustomers = [
-  { id: "cus_1", name: "John Doe", email: "john.doe@example.com", plan: "Fiber 100", status: "Active", joined: "2023-01-15" },
-  { id: "cus_2", name: "Jane Smith", email: "jane.smith@example.com", plan: "Basic DSL", status: "Active", joined: "2022-11-30" },
-  { id: "cus_3", name: "Mike Johnson", email: "mike.j@example.com", plan: "Fiber 500", status: "Suspended", joined: "2023-03-20" },
-  { id: "cus_4", name: "Emily Davis", email: "emily.d@example.com", plan: "Fiber 1000", status: "Active", joined: "2021-08-10" },
-  { id: "cus_5", name: "Chris Wilson", email: "chris.w@example.com", plan: "Basic DSL", status: "Inactive", joined: "2023-05-01" },
-  { id: "cus_6", name: "Sarah Brown", email: "sarah.b@example.com", plan: "Fiber 100", status: "Active", joined: "2023-09-22" },
+  { id: "cus_1", name: "John Doe", email: "john.doe@example.com", servicePackage: "Fiber 100", status: "Active", joined: "2023-01-15" },
+  { id: "cus_2", name: "Jane Smith", email: "jane.smith@example.com", servicePackage: "Basic DSL", status: "Active", joined: "2022-11-30" },
+  { id: "cus_3", name: "Mike Johnson", email: "mike.j@example.com", servicePackage: "Fiber 500", status: "Suspended", joined: "2023-03-20" },
+  { id: "cus_4", name: "Emily Davis", email: "emily.d@example.com", servicePackage: "Fiber 1000", status: "Active", joined: "2021-08-10" },
+  { id: "cus_5", name: "Chris Wilson", email: "chris.w@example.com", servicePackage: "Basic DSL", status: "Inactive", joined: "2023-05-01" },
+  { id: "cus_6", name: "Sarah Brown", email: "sarah.b@example.com", servicePackage: "Fiber 100", status: "Active", joined: "2023-09-22" },
 ]
 
 type Customer = typeof initialCustomers[0];
@@ -65,7 +65,7 @@ export default function CustomersPage() {
             <TableRow>
               <TableHead>Customer</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Service Plan</TableHead>
+              <TableHead>Service Package</TableHead>
               <TableHead>Joined Date</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
@@ -87,7 +87,7 @@ export default function CustomersPage() {
                     {customer.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{customer.plan}</TableCell>
+                <TableCell>{customer.servicePackage}</TableCell>
                 <TableCell>{customer.joined}</TableCell>
                 <TableCell>
                   <DropdownMenu>

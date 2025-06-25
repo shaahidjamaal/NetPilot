@@ -31,8 +31,8 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 
-const newPlanSchema = z.object({
-  name: z.string().min(3, "Plan name must be at least 3 characters."),
+const newPackageSchema = z.object({
+  name: z.string().min(3, "Package name must be at least 3 characters."),
   description: z.string().optional(),
   price: z.coerce.number().positive("Price must be a positive number."),
   validity: z.coerce.number().int().positive("Validity must be a positive number of days."),
@@ -57,12 +57,12 @@ const newPlanSchema = z.object({
 });
 
 
-export default function AddPlanPage() {
+export default function AddPackagePage() {
   const router = useRouter()
   const { toast } = useToast()
 
-  const form = useForm<z.infer<typeof newPlanSchema>>({
-    resolver: zodResolver(newPlanSchema),
+  const form = useForm<z.infer<typeof newPackageSchema>>({
+    resolver: zodResolver(newPackageSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -77,10 +77,10 @@ export default function AddPlanPage() {
 
   const burstEnabled = form.watch("burstEnabled");
 
-  function onSubmit(values: z.infer<typeof newPlanSchema>) {
+  function onSubmit(values: z.infer<typeof newPackageSchema>) {
     console.log(values)
     toast({
-      title: "Plan Created Successfully",
+      title: "Package Created Successfully",
       description: `${values.name} has been created.`,
     })
     router.push("/plans")
@@ -96,7 +96,7 @@ export default function AddPlanPage() {
                 </Link>
             </Button>
             <div>
-              <CardTitle>Create New Service Plan</CardTitle>
+              <CardTitle>Create New Service Package</CardTitle>
               <CardDescription>Fill out the form below to add a new package.</CardDescription>
             </div>
         </div>
@@ -112,7 +112,7 @@ export default function AddPlanPage() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Plan Name</FormLabel>
+                          <FormLabel>Package Name</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., Fiber 100" {...field} />
                           </FormControl>
@@ -127,7 +127,7 @@ export default function AddPlanPage() {
                         <FormItem>
                           <FormLabel>Description (Optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="A short description of the plan" {...field} />
+                            <Input placeholder="A short description of the package" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -157,7 +157,7 @@ export default function AddPlanPage() {
                           <FormControl>
                             <Input type="number" placeholder="30" {...field} />
                           </FormControl>
-                           <FormDescription>Duration of the plan in days.</FormDescription>
+                           <FormDescription>Duration of the package in days.</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -313,7 +313,7 @@ export default function AddPlanPage() {
             
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
-            <Button type="submit">Create Plan</Button>
+            <Button type="submit">Create Package</Button>
           </CardFooter>
         </form>
       </Form>

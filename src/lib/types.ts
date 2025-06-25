@@ -1,4 +1,40 @@
 
+export const allPermissions = [
+  "manage_users",
+  "manage_roles",
+  "view_invoices",
+  "generate_invoices",
+  "receive_payments",
+  "edit_customers",
+  "renew_customers",
+  "terminate_customers",
+  "manage_packages",
+  "manage_zones",
+] as const;
+
+export type Permission = (typeof allPermissions)[number];
+
+export const permissionLabels: Record<Permission, string> = {
+    manage_users: "Manage Users",
+    manage_roles: "Manage Roles",
+    view_invoices: "View Invoices",
+    generate_invoices: "Generate Invoices",
+    receive_payments: "Receive Payments",
+    edit_customers: "Edit Customers",
+    renew_customers: "Renew Customers",
+    terminate_customers: "Terminate Customers",
+    manage_packages: "Manage Packages",
+    manage_zones: "Manage Zones",
+};
+
+
+export type Role = {
+  id: string;
+  name: string;
+  description: string;
+  permissions: Permission[];
+};
+
 export type PackageType = "Home Package" | "Business Package" | "Wireless Package";
 
 export type Package = {
@@ -51,7 +87,6 @@ export type User = {
   email: string;
   userType: 'Admin Staff' | 'Office Staff';
   designation: string;
-  canViewInvoice: boolean;
-  canReceivePayment: boolean;
+  roleId: string;
   enabled: boolean;
 };

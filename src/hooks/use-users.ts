@@ -5,9 +5,9 @@ import { type User } from '@/lib/types';
 import { useState, useEffect, useCallback } from 'react';
 
 const initialUsers: User[] = [
-  { id: 'user_1', email: 'admin@example.com', userType: 'Admin Staff', designation: 'Super Admin', canViewInvoice: true, canReceivePayment: true, enabled: true },
-  { id: 'user_2', email: 'staff@example.com', userType: 'Office Staff', designation: 'Billing Clerk', canViewInvoice: true, canReceivePayment: true, enabled: true },
-  { id: 'user_3', email: 'support@example.com', userType: 'Office Staff', designation: 'Support Agent', canViewInvoice: false, canReceivePayment: false, enabled: false },
+  { id: 'user_1', email: 'admin@example.com', userType: 'Admin Staff', designation: 'Super Admin', roleId: 'role_1', enabled: true },
+  { id: 'user_2', email: 'staff@example.com', userType: 'Office Staff', designation: 'Billing Clerk', roleId: 'role_2', enabled: true },
+  { id: 'user_3', email: 'support@example.com', userType: 'Office Staff', designation: 'Support Agent', roleId: 'role_3', enabled: false },
 ]
 
 const STORAGE_KEY = 'netpilot-users';

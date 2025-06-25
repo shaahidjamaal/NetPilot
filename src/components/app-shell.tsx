@@ -33,7 +33,6 @@ import {
   MapPin,
   Package,
   Shield,
-  Lightbulb,
   BarChart,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

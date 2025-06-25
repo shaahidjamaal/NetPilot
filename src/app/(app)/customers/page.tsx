@@ -1,10 +1,10 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MoreHorizontal, PlusCircle, Loader2 } from "lucide-react"
+import { MoreHorizontal, PlusCircle, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { format, isBefore } from "date-fns"
 
 import { Badge } from "@/components/ui/badge"
@@ -57,6 +57,8 @@ import { useCustomers } from "@/hooks/use-customers"
 import { useZones } from "@/hooks/use-zones"
 import { type Customer } from "@/lib/types"
 
+type SortableColumn = keyof Pick<Customer, 'id' | 'pppoeUsername' | 'name' | 'servicePackage' | 'lastRechargeDate' | 'expiryDate'>;
+
 export default function CustomersPage() {
   const router = useRouter()
   const { customers, deleteCustomer, topUpCustomer, isLoading } = useCustomers()
@@ -68,6 +70,7 @@ export default function CustomersPage() {
   const [topUpAmount, setTopUpAmount] = useState<string>("");
 
   const [zoneFilter, setZoneFilter] = useState<string>('all');
+  const [sortConfig, setSortConfig] = useState<{ key: SortableColumn; direction: 'ascending' | 'descending' } | null>({ key: 'id', direction: 'ascending' });
 
 
   const handleDeleteClick = (customer: Customer) => {
@@ -110,6 +113,50 @@ export default function CustomersPage() {
     if (zoneFilter === 'all') return true;
     return customer.zone === zoneFilter;
   });
+
+  const requestSort = (key: SortableColumn) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const sortedCustomers = useMemo(() => {
+    let sortableItems = [...filteredCustomers];
+    if (sortConfig) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (aValue === undefined || aValue === null) return 1;
+        if (bValue === undefined || bValue === null) return -1;
+        
+        let comparison = 0;
+        if (['lastRechargeDate', 'expiryDate'].includes(sortConfig.key)) {
+            const dateA = new Date(aValue as string).getTime();
+            const dateB = new Date(bValue as string).getTime();
+            if (dateA > dateB) comparison = 1;
+            if (dateA < dateB) comparison = -1;
+        } else {
+            comparison = String(aValue).localeCompare(String(bValue), undefined, { numeric: true });
+        }
+
+        return sortConfig.direction === 'ascending' ? comparison : -comparison;
+      });
+    }
+    return sortableItems;
+  }, [filteredCustomers, sortConfig]);
+
+  const getSortIcon = (name: SortableColumn) => {
+    if (!sortConfig || sortConfig.key !== name) {
+        return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    }
+    if (sortConfig.direction === 'ascending') {
+        return <ArrowUp className="ml-2 h-4 w-4 text-primary" />;
+    }
+    return <ArrowDown className="ml-2 h-4 w-4 text-primary" />;
+  };
 
   const getPackageStatus = (customer: Customer) => {
     if (customer.status === 'Inactive') {
@@ -164,14 +211,38 @@ export default function CustomersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Username</TableHead>
-              <TableHead>Name</TableHead>
+              <TableHead>
+                <Button variant="ghost" onClick={() => requestSort('id')} className="-ml-4">
+                  ID {getSortIcon('id')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                 <Button variant="ghost" onClick={() => requestSort('pppoeUsername')} className="-ml-4">
+                  Username {getSortIcon('pppoeUsername')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button variant="ghost" onClick={() => requestSort('name')} className="-ml-4">
+                  Name {getSortIcon('name')}
+                </Button>
+              </TableHead>
               <TableHead>Mobile</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Package</TableHead>
-              <TableHead>Renewed At</TableHead>
-              <TableHead>Expires At</TableHead>
+              <TableHead>
+                <Button variant="ghost" onClick={() => requestSort('servicePackage')} className="-ml-4">
+                  Package {getSortIcon('servicePackage')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button variant="ghost" onClick={() => requestSort('lastRechargeDate')} className="-ml-4">
+                  Renewed At {getSortIcon('lastRechargeDate')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button variant="ghost" onClick={() => requestSort('expiryDate')} className="-ml-4">
+                  Expires At {getSortIcon('expiryDate')}
+                </Button>
+              </TableHead>
               <TableHead>Status</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
@@ -179,7 +250,7 @@ export default function CustomersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCustomers.map((customer) => {
+            {sortedCustomers.map((customer) => {
                 const packageStatus = getPackageStatus(customer);
                 return (
                     <TableRow key={customer.id}>

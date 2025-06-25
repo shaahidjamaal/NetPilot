@@ -22,25 +22,20 @@ import {
   FileText,
   CreditCard,
   BrainCircuit,
-  Settings,
   LogOut,
   Network,
-  Server,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/customers", icon: Users, label: "Customers" },
   { href: "/plans", icon: FileText, label: "Service Plans" },
-  { href: "/nas", icon: Server, label: "NAS Devices" },
   { href: "/billing", icon: CreditCard, label: "Billing" },
   { href: "/recommendations", icon: BrainCircuit, label: "AI Recommendations" },
 ];
 
 const bottomNavItems = [
-  { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

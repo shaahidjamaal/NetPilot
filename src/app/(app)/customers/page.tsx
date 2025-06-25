@@ -40,14 +40,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { useCustomers } from "@/hooks/use-customers"
+import { useZones } from "@/hooks/use-zones"
 import { type Customer } from "@/lib/types"
 
 export default function CustomersPage() {
   const { customers, deleteCustomer, isLoading } = useCustomers()
+  const { zones, isLoading: isLoadingZones } = useZones()
   const { toast } = useToast()
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  const [zoneFilter, setZoneFilter] = useState<string>('all');
+
 
   const handleDeleteClick = (customer: Customer) => {
     setCustomerToDelete(customer);
@@ -63,6 +68,11 @@ export default function CustomersPage() {
           setCustomerToDelete(null);
       }
   };
+  
+  const filteredCustomers = customers.filter(customer => {
+    if (zoneFilter === 'all') return true;
+    return customer.zone === zoneFilter;
+  });
 
   if (isLoading) {
     return (
@@ -81,12 +91,25 @@ export default function CustomersPage() {
                 <CardTitle>Customers</CardTitle>
                 <CardDescription>Manage your customers and view their details.</CardDescription>
             </div>
-             <Link href="/customers/new" passHref>
-                <Button>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Customer
-                </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+                 <Select value={zoneFilter} onValueChange={setZoneFilter} disabled={isLoadingZones}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by zone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Zones</SelectItem>
+                        {zones.map(zone => (
+                            <SelectItem key={zone.id} value={zone.name}>{zone.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                 <Link href="/customers/new" passHref>
+                    <Button>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Customer
+                    </Button>
+                </Link>
+            </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -95,7 +118,7 @@ export default function CustomersPage() {
             <TableRow>
               <TableHead>Customer</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Service Package</TableHead>
+              <TableHead>Service Info</TableHead>
               <TableHead>Joined Date</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
@@ -103,7 +126,7 @@ export default function CustomersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.map((customer) => (
+            {filteredCustomers.map((customer) => (
                 <TableRow key={customer.id}>
                 <TableCell>
                   <div className="font-medium">{customer.name}</div>
@@ -117,7 +140,10 @@ export default function CustomersPage() {
                     {customer.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{customer.servicePackage}</TableCell>
+                <TableCell>
+                  <div className="font-medium">{customer.servicePackage}</div>
+                  <div className="text-sm text-muted-foreground">{customer.zone || 'No Zone'}</div>
+                </TableCell>
                 <TableCell>{format(new Date(customer.joined), 'yyyy-MM-dd')}</TableCell>
                 <TableCell>
                   <DropdownMenu>

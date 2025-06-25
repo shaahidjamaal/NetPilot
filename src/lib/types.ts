@@ -29,4 +29,10 @@ export type Customer = {
   permanentAddress: string;
   installationAddress: string;
   aadharNumber: string;
+  zone?: string;
+};
+
+export type Zone = {
+  id: string;
+  name: string;
 };

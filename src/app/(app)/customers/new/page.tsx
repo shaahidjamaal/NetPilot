@@ -35,12 +35,14 @@ import { ArrowLeft } from "lucide-react"
 import { usePackages } from "@/hooks/use-packages"
 import { useCustomers } from "@/hooks/use-customers"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useZones } from "@/hooks/use-zones"
 
 const newCustomerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   mobile: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit mobile number."),
   email: z.string().email("Please enter a valid email address."),
   servicePackage: z.string({ required_error: "Please select a service package." }),
+  zone: z.string().optional(),
   permanentAddress: z.string().min(10, "Address must be at least 10 characters."),
   installationAddress: z.string().min(10, "Address must be at least 10 characters."),
   sameAsPermanent: z.boolean().default(false).optional(),
@@ -67,6 +69,7 @@ export default function AddCustomerPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { packages, isLoading: isLoadingPackages } = usePackages()
+  const { zones, isLoading: isLoadingZones } = useZones()
   const { addCustomer } = useCustomers()
   
   const form = useForm<z.infer<typeof newCustomerSchema>>({
@@ -76,6 +79,7 @@ export default function AddCustomerPage() {
       mobile: "",
       email: "",
       servicePackage: undefined,
+      zone: undefined,
       permanentAddress: "",
       installationAddress: "",
       sameAsPermanent: false,
@@ -185,6 +189,35 @@ export default function AddCustomerPage() {
                           </SelectContent>
                         </Select>
                        )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+            <div className="grid md:grid-cols-1 gap-6">
+                 <FormField
+                  control={form.control}
+                  name="zone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Zone</FormLabel>
+                       {isLoadingZones ? (
+                         <Skeleton className="h-10 w-full" />
+                       ) : (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a zone for the customer" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {zones.map(zone => (
+                              <SelectItem key={zone.id} value={zone.name}>{zone.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                       )}
+                       <FormDescription>Assign this customer to a service zone for easy sorting and management.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

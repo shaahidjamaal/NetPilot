@@ -75,5 +75,10 @@ export function usePackages() {
     updateLocalStorage(newPackages);
   }, [packages, updateLocalStorage]);
 
-  return { packages, addPackage, getPackageByName, updatePackage, isLoading };
+  const deletePackage = useCallback((name: string) => {
+    const newPackages = packages.filter(p => p.name !== name);
+    updateLocalStorage(newPackages);
+  }, [packages, updateLocalStorage]);
+
+  return { packages, addPackage, getPackageByName, updatePackage, deletePackage, isLoading };
 }

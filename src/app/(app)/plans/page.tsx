@@ -1,78 +1,161 @@
-
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Download, Gauge, PlusCircle, Upload, Users, Loader2 } from "lucide-react"
+import * as React from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { MoreHorizontal, PlusCircle, Trash2, Loader2 } from "lucide-react"
 import { usePackages } from "@/hooks/use-packages"
 import { Badge } from "@/components/ui/badge"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useToast } from "@/hooks/use-toast"
+import { type Package } from "@/lib/types"
 
 export default function PackagesPage() {
-  const { packages, isLoading } = usePackages()
+  const router = useRouter();
+  const { packages, isLoading, deletePackage } = usePackages()
+  const [packageToDelete, setPackageToDelete] = React.useState<Package | null>(null);
+  const { toast } = useToast()
+
+  const handleDelete = () => {
+      if (packageToDelete) {
+          deletePackage(packageToDelete.name);
+          toast({
+              title: "Package Deleted",
+              description: `The package "${packageToDelete.name}" has been deleted.`,
+              variant: "destructive"
+          });
+          setPackageToDelete(null);
+      }
+  };
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Service Packages</h1>
-          <p className="text-muted-foreground">Create, modify, and track various service packages.</p>
-        </div>
-        <Link href="/plans/new" passHref>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create New Package
-          </Button>
-        </Link>
-      </div>
-
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {packages.map((pkg) => (
-            <Card key={pkg.name} className="flex flex-col">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>{pkg.name}</CardTitle>
-                  {pkg.packageType && <Badge variant="outline">{pkg.packageType}</Badge>}
-                </div>
-                <CardDescription className="!mt-2">
-                  <span className="text-3xl font-bold text-primary">₹{pkg.price.toLocaleString('en-IN')}</span>
-                  /month
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <ul className="space-y-3 text-sm">
-                  <li className="flex items-center gap-2">
-                    <Download className="h-4 w-4 text-accent" />
-                    <span><span className="font-medium">{pkg.downloadSpeed} Mbps</span> Download</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Upload className="h-4 w-4 text-accent" />
-                    <span><span className="font-medium">{pkg.uploadSpeed} Mbps</span> Upload</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Gauge className="h-4 w-4 text-accent" />
-                    <span>Data: <span className="font-medium">{pkg.dataLimit}</span></span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-accent" />
-                    <span>Ideal for <span className="font-medium">{pkg.users}</span> users</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                 <Button asChild className="w-full">
-                  <Link href={`/plans/edit/${encodeURIComponent(pkg.name)}`}>Modify Package</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Service Packages</h1>
+              <p className="text-muted-foreground">Create, modify, and track various service packages.</p>
+            </div>
+            <Link href="/plans/new" passHref>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create New Package
+              </Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead>Speed (Down/Up)</TableHead>
+                  <TableHead>Data Limit</TableHead>
+                  <TableHead>
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {packages.length > 0 ? packages.map((pkg) => (
+                  <TableRow key={pkg.name}>
+                    <TableCell className="font-medium">{pkg.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{pkg.packageType}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      ₹{pkg.price.toLocaleString('en-IN')}
+                    </TableCell>
+                    <TableCell>
+                      {pkg.downloadSpeed} / {pkg.uploadSpeed} Mbps
+                    </TableCell>
+                    <TableCell>{pkg.dataLimit}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => router.push(`/plans/edit/${encodeURIComponent(pkg.name)}`)}>
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive" onClick={() => setPackageToDelete(pkg)}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                )) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      No service packages found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+      
+      {packageToDelete && (
+        <AlertDialog open={!!packageToDelete} onOpenChange={() => setPackageToDelete(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will permanently delete the package "{packageToDelete.name}". This action cannot be undone.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} variant="destructive">
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
       )}
-    </div>
+    </>
   )
 }

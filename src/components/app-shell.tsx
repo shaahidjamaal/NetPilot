@@ -47,7 +47,7 @@ const navItems = [
     { href: "/leads", icon: UserPlus, label: "Leads" },
     { href: "/package-sales", icon: ShoppingCart, label: "Package Sales" },
     { href: "/billing", icon: FileText, label: "Invoices" },
-    { href: "/payment", icon: CreditCard, label: "Payment" },
+    { href: "/payment", icon: CreditCard, label: "Payments" },
     { href: "/inventory", icon: Boxes, label: "Inventory" },
     { href: "/zones", icon: MapPin, label: "Zones" },
     { href: "/plans", icon: Package, label: "Packages" },

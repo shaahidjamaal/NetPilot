@@ -106,4 +106,8 @@ export type Invoice = {
   dueDate: string; // ISO date string
   generatedDate: string; // ISO date string
   status: InvoiceStatus;
+  packageName: string;
+  packagePrice: number;
+  discount: number;
+  additionalCharges: number;
 };

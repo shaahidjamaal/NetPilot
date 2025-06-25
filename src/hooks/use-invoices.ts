@@ -62,8 +62,9 @@ export function useInvoices() {
 
         const discount = data.discountOverride !== undefined ? data.discountOverride : (customer.discount || 0);
         const basePrice = servicePackage.price;
+        const additionalCharges = data.additionalCharges || 0;
         const discountAmount = basePrice * (discount / 100);
-        const finalAmount = (basePrice - discountAmount) + (data.additionalCharges || 0);
+        const finalAmount = (basePrice - discountAmount) + additionalCharges;
 
         const today = new Date();
         const newInvoice: Invoice = {
@@ -73,7 +74,11 @@ export function useInvoices() {
             amount: Math.round(finalAmount),
             generatedDate: today.toISOString(),
             dueDate: addDays(today, 15).toISOString(),
-            status: 'Unpaid'
+            status: 'Unpaid',
+            packageName: servicePackage.name,
+            packagePrice: basePrice,
+            discount: discount,
+            additionalCharges: additionalCharges,
         };
 
         const newInvoices = [newInvoice, ...invoices].sort((a, b) => new Date(b.generatedDate).getTime() - new Date(a.generatedDate).getTime());
@@ -94,7 +99,11 @@ export function useInvoices() {
         updateLocalStorage(newInvoices);
     }, [invoices, updateLocalStorage]);
 
+    const getInvoiceById = useCallback((invoiceId: string) => {
+        return invoices.find(inv => inv.id === invoiceId);
+    }, [invoices]);
+
     const hookIsLoading = isLoading || isLoadingCustomers || isLoadingPackages;
 
-    return { invoices, addInvoice, markAsPaid, deleteInvoice, isLoading: hookIsLoading, customers, packages };
+    return { invoices, addInvoice, markAsPaid, deleteInvoice, getInvoiceById, isLoading: hookIsLoading, customers, packages };
 }

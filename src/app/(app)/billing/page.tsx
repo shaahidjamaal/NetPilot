@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { MoreHorizontal, Loader2, PlusCircle, Trash2 } from "lucide-react"
 import { format } from "date-fns"
+import { useRouter } from "next/navigation"
 
 import { useInvoices, type AddInvoiceInput } from "@/hooks/use-invoices"
 import { useToast } from "@/hooks/use-toast"
@@ -197,12 +198,20 @@ export default function BillingPage() {
   const { invoices, addInvoice, markAsPaid, deleteInvoice, isLoading, customers, packages } = useInvoices()
   const { toast } = useToast()
   const [invoiceToDelete, setInvoiceToDelete] = React.useState<string | null>(null)
+  const router = useRouter()
 
   const handleMarkAsPaid = (invoiceId: string) => {
     markAsPaid(invoiceId)
     toast({
         title: "Invoice Updated",
         description: "The invoice has been marked as paid.",
+    })
+  }
+
+  const handleSendReminder = (invoiceId: string) => {
+    toast({
+      title: "Reminder Sent",
+      description: `An invoice reminder has been sent for ${invoiceId}.`,
     })
   }
 
@@ -282,8 +291,12 @@ export default function BillingPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>View Invoice</DropdownMenuItem>
-                          <DropdownMenuItem>Send Reminder</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push(`/invoices/${invoice.id}`)}>
+                            View Invoice
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSendReminder(invoice.id)}>
+                            Send Reminder
+                          </DropdownMenuItem>
                            {invoice.status !== 'Paid' && (
                                 <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)}>
                                     Mark as Paid

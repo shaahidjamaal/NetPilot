@@ -1,4 +1,5 @@
 
+
 export const allPermissions = [
   "manage_users",
   "manage_roles",
@@ -154,4 +155,23 @@ export type AppSettings = {
   invoiceSuffix: IdSuffixType;
   customerIdPrefix: string;
   customerIdSuffix: IdSuffixType;
+};
+
+export const ticketStatuses = ["Open", "In Progress", "Closed"] as const;
+export type TicketStatus = (typeof ticketStatuses)[number];
+
+export const ticketPriorities = ["Low", "Medium", "High"] as const;
+export type TicketPriority = (typeof ticketPriorities)[number];
+
+export type Ticket = {
+  id: string;
+  subject: string;
+  description: string;
+  customerId: string;
+  customerName: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  assigneeId?: string; // Optional user ID
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
 };

@@ -221,6 +221,140 @@ export class AAAService {
         return this.mikrotikClient.testConnection();
     }
 
+    // Log Management Functions
+
+    // Get NAT logs
+    async getNATLogs(options: {
+        count?: number;
+        sourceIP?: string;
+        destinationIP?: string;
+        protocol?: string;
+        action?: string;
+        startDate?: string;
+        endDate?: string;
+    } = {}): Promise<MikroTikResponse> {
+        const logOptions: any = {
+            count: options.count || 100,
+            topics: ['firewall']
+        };
+
+        // Build where clause for filtering
+        let whereClause = '';
+
+        if (options.sourceIP) {
+            whereClause += `message~"${options.sourceIP}"`;
+        }
+
+        if (options.destinationIP) {
+            if (whereClause) whereClause += ' && ';
+            whereClause += `message~"${options.destinationIP}"`;
+        }
+
+        if (options.protocol) {
+            if (whereClause) whereClause += ' && ';
+            whereClause += `message~"${options.protocol}"`;
+        }
+
+        if (options.action) {
+            if (whereClause) whereClause += ' && ';
+            whereClause += `message~"${options.action}"`;
+        }
+
+        // Add date filtering
+        if (options.startDate || options.endDate) {
+            let dateFilter = '';
+            if (options.startDate) {
+                dateFilter += `time>="${options.startDate}"`;
+            }
+            if (options.endDate) {
+                if (dateFilter) dateFilter += ' && ';
+                dateFilter += `time<="${options.endDate}"`;
+            }
+
+            if (whereClause) {
+                whereClause = `(${whereClause}) && (${dateFilter})`;
+            } else {
+                whereClause = dateFilter;
+            }
+        }
+
+        if (whereClause) {
+            logOptions.where = whereClause;
+        }
+
+        return this.mikrotikClient.getNATLogs(logOptions);
+    }
+
+    // Get RADIUS/AAA logs
+    async getAccessRequestLogs(options: {
+        count?: number;
+        username?: string;
+        clientIP?: string;
+        authStatus?: string;
+        startDate?: string;
+        endDate?: string;
+    } = {}): Promise<MikroTikResponse> {
+        const logOptions: any = {
+            count: options.count || 100,
+            topics: ['radius', 'ppp', 'hotspot']
+        };
+
+        // Build where clause for filtering
+        let whereClause = '';
+
+        if (options.username) {
+            whereClause += `message~"${options.username}"`;
+        }
+
+        if (options.clientIP) {
+            if (whereClause) whereClause += ' && ';
+            whereClause += `message~"${options.clientIP}"`;
+        }
+
+        if (options.authStatus) {
+            if (whereClause) whereClause += ' && ';
+            if (options.authStatus === 'accept') {
+                whereClause += `(message~"accept" || message~"login" || message~"authenticated")`;
+            } else if (options.authStatus === 'reject') {
+                whereClause += `(message~"reject" || message~"deny" || message~"failed")`;
+            }
+        }
+
+        // Add date filtering
+        if (options.startDate || options.endDate) {
+            let dateFilter = '';
+            if (options.startDate) {
+                dateFilter += `time>="${options.startDate}"`;
+            }
+            if (options.endDate) {
+                if (dateFilter) dateFilter += ' && ';
+                dateFilter += `time<="${options.endDate}"`;
+            }
+
+            if (whereClause) {
+                whereClause = `(${whereClause}) && (${dateFilter})`;
+            } else {
+                whereClause = dateFilter;
+            }
+        }
+
+        if (whereClause) {
+            logOptions.where = whereClause;
+        }
+
+        return this.mikrotikClient.getRADIUSLogs(logOptions);
+    }
+
+    // Get system logs with filtering
+    async getSystemLogs(options: {
+        count?: number;
+        topics?: string[];
+        where?: string;
+        buffer?: string;
+    } = {}): Promise<MikroTikResponse> {
+        return this.mikrotikClient.getSystemLogs(options);
+    }
+
     // Generate random password
     private generatePassword(length: number = 8): string {
         const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

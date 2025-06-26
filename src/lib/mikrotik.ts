@@ -540,6 +540,183 @@ class MikroTikClient {
             };
         }
     }
+
+    // Test connection
+    async testConnection(): Promise<MikroTikResponse> {
+        try {
+            const systemInfo = await this.executeCommand('/system/resource/print');
+            return {
+                success: true,
+                message: 'Connection successful',
+                data: systemInfo
+            };
+        } catch (error: any) {
+            return {
+                success: false,
+                message: `Connection failed: ${error.message}`,
+                error: error.message
+            };
+        }
+    }
+
+    // Log Management Functions
+
+    // Get NAT logs (firewall logs with NAT action)
+    async getNATLogs(options: {
+        count?: number;
+        follow?: boolean;
+        topics?: string[];
+        where?: string;
+    } = {}): Promise<MikroTikResponse> {
+        try {
+            const params: any = {};
+
+            if (options.count) {
+                params['count'] = options.count.toString();
+            }
+
+            if (options.follow) {
+                params['follow'] = 'yes';
+            }
+
+            if (options.topics && options.topics.length > 0) {
+                params['topics'] = options.topics.join(',');
+            }
+
+            if (options.where) {
+                params['where'] = options.where;
+            }
+
+            // Get firewall logs that contain NAT information
+            const logs = await this.executeCommand('/log/print', params);
+
+            // Filter for NAT-related logs
+            const natLogs = logs.filter((log: any) =>
+                log.topics && (
+                    log.topics.includes('firewall') ||
+                    log.topics.includes('nat') ||
+                    log.message?.toLowerCase().includes('nat') ||
+                    log.message?.toLowerCase().includes('srcnat') ||
+                    log.message?.toLowerCase().includes('dstnat')
+                )
+            );
+
+            return {
+                success: true,
+                message: 'NAT logs retrieved successfully',
+                data: natLogs
+            };
+        } catch (error: any) {
+            return {
+                success: false,
+                message: `Failed to get NAT logs: ${error.message}`,
+                error: error.message
+            };
+        }
+    }
+
+    // Get RADIUS/AAA logs (authentication logs)
+    async getRADIUSLogs(options: {
+        count?: number;
+        follow?: boolean;
+        topics?: string[];
+        where?: string;
+    } = {}): Promise<MikroTikResponse> {
+        try {
+            const params: any = {};
+
+            if (options.count) {
+                params['count'] = options.count.toString();
+            }
+
+            if (options.follow) {
+                params['follow'] = 'yes';
+            }
+
+            if (options.topics && options.topics.length > 0) {
+                params['topics'] = options.topics.join(',');
+            }
+
+            if (options.where) {
+                params['where'] = options.where;
+            }
+
+            // Get logs related to RADIUS/AAA
+            const logs = await this.executeCommand('/log/print', params);
+
+            // Filter for RADIUS/AAA-related logs
+            const radiusLogs = logs.filter((log: any) =>
+                log.topics && (
+                    log.topics.includes('radius') ||
+                    log.topics.includes('ppp') ||
+                    log.topics.includes('hotspot') ||
+                    log.message?.toLowerCase().includes('radius') ||
+                    log.message?.toLowerCase().includes('authentication') ||
+                    log.message?.toLowerCase().includes('login') ||
+                    log.message?.toLowerCase().includes('logout')
+                )
+            );
+
+            return {
+                success: true,
+                message: 'RADIUS logs retrieved successfully',
+                data: radiusLogs
+            };
+        } catch (error: any) {
+            return {
+                success: false,
+                message: `Failed to get RADIUS logs: ${error.message}`,
+                error: error.message
+            };
+        }
+    }
+
+    // Get all system logs with filtering
+    async getSystemLogs(options: {
+        count?: number;
+        follow?: boolean;
+        topics?: string[];
+        where?: string;
+        buffer?: string;
+    } = {}): Promise<MikroTikResponse> {
+        try {
+            const params: any = {};
+
+            if (options.count) {
+                params['count'] = options.count.toString();
+            }
+
+            if (options.follow) {
+                params['follow'] = 'yes';
+            }
+
+            if (options.topics && options.topics.length > 0) {
+                params['topics'] = options.topics.join(',');
+            }
+
+            if (options.where) {
+                params['where'] = options.where;
+            }
+
+            if (options.buffer) {
+                params['buffer'] = options.buffer;
+            }
+
+            const logs = await this.executeCommand('/log/print', params);
+
+            return {
+                success: true,
+                message: 'System logs retrieved successfully',
+                data: logs
+            };
+        } catch (error: any) {
+            return {
+                success: false,
+                message: `Failed to get system logs: ${error.message}`,
+                error: error.message
+            };
+        }
+    }
 }
 
 // Factory function to create MikroTik client

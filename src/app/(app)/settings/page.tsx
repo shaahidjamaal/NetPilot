@@ -25,6 +25,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useBillingProfile } from "@/hooks/use-billing-profile"
+import { NasDevicesManagement } from "@/components/nas-devices-management"
 
 
 // General Settings Tab Content
@@ -512,7 +513,7 @@ function SettingsPageContent() {
               <TabsTrigger value="payment"><CreditCard className="mr-2 h-4 w-4" />Payment</TabsTrigger>
               <TabsTrigger value="sms"><MessageSquare className="mr-2 h-4 w-4" />SMS</TabsTrigger>
               <TabsTrigger value="email"><Mail className="mr-2 h-4 w-4" />Email</TabsTrigger>
-              <TabsTrigger value="nas"><Network className="mr-2 h-4 w-4" />NAS & IP Pool</TabsTrigger>
+              <TabsTrigger value="nas"><Network className="mr-2 h-4 w-4" />NAS Devices</TabsTrigger>
               <TabsTrigger value="about"><Info className="mr-2 h-4 w-4" />About</TabsTrigger>
             </TabsList>
         </div>
@@ -544,7 +545,7 @@ function SettingsPageContent() {
           />
         </TabsContent>
         <TabsContent value="nas" className="mt-6">
-          <NasAndIpPoolTab />
+          <NasDevicesManagement />
         </TabsContent>
         <TabsContent value="about" className="mt-6">
           <AboutTab />

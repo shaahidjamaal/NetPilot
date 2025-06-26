@@ -67,7 +67,6 @@ const navItems = [
 ];
 
 const systemNavItems = [
-    { href: "/mikrotik", icon: Router, label: "MikroTik AAA" },
     { href: "/access-request-log", icon: FileClock, label: "Access Request Log" },
     { href: "/nat-logs", icon: FileCode, label: "NAT Logs" },
 ]

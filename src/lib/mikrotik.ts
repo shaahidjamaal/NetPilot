@@ -53,10 +53,53 @@ function getMikrotikCredentials(): MikroTikCredentials | { error: string } {
     const port = process.env.MIKROTIK_PORT ? parseInt(process.env.MIKROTIK_PORT) : 8728;
 
     if (!host || !user) {
-        return { error: 'Mikrotik host and user must be configured in your .env file.' };
+        return { error: 'Mikrotik host and user must be configured in your .env file or NAS devices.' };
     }
 
     return { host, user, password: password || '', port };
+}
+
+// Get MikroTik credentials from NAS device configuration
+async function getMikrotikCredentialsFromNAS(deviceId?: string): Promise<MikroTikCredentials | { error: string }> {
+    try {
+        // Import NAS device model
+        const NasDevice = require('./models/NasDevice').default;
+
+        let query: any = {
+            nasType: 'MikroTik RouterOS',
+            isActive: true
+        };
+
+        if (deviceId) {
+            query._id = deviceId;
+        }
+
+        const device = await NasDevice.findOne(query);
+
+        if (!device) {
+            return { error: 'No active MikroTik RouterOS device found in NAS configuration.' };
+        }
+
+        if (!device.mikrotikConfig) {
+            return { error: 'MikroTik configuration is missing for the selected device.' };
+        }
+
+        const config = device.mikrotikConfig;
+
+        if (!config.username || !config.password) {
+            return { error: 'MikroTik username and password must be configured.' };
+        }
+
+        return {
+            host: device.nasIpAddress,
+            user: config.username,
+            password: config.password,
+            port: config.apiPort || 8728
+        };
+    } catch (error) {
+        console.error('Error getting MikroTik credentials from NAS:', error);
+        return { error: 'Failed to retrieve MikroTik configuration from database.' };
+    }
 }
 
 // MikroTik API Client Class
@@ -500,8 +543,17 @@ class MikroTikClient {
 }
 
 // Factory function to create MikroTik client
-export function createMikroTikClient(): MikroTikClient | { error: string } {
+export function createMikroTikClient(deviceId?: string): MikroTikClient | { error: string } {
     const creds = getMikrotikCredentials();
+    if ('error' in creds) {
+        return creds;
+    }
+    return new MikroTikClient(creds);
+}
+
+// Factory function to create MikroTik client from NAS device configuration
+export async function createMikroTikClientFromNAS(deviceId?: string): Promise<MikroTikClient | { error: string }> {
+    const creds = await getMikrotikCredentialsFromNAS(deviceId);
     if ('error' in creds) {
         return creds;
     }
